@@ -41,7 +41,7 @@ final class SubmitDreamLogicProvider
   }
 }
 
-String _$submitDreamLogicHash() => r'5af156c0a831bebfecc4f0e932c2dcbe1c3e830b';
+String _$submitDreamLogicHash() => r'3ea9a4043284fa530babff1763c9b2e502859ec4';
 
 abstract class _$SubmitDreamLogic extends $Notifier<AsyncValue<DreamEntry?>> {
   AsyncValue<DreamEntry?> build();

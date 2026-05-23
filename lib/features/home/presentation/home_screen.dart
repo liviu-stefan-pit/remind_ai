@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remind_ai/constants/app_strings.dart';
+import 'package:remind_ai/design/background/quiet_sky.dart';
+import 'package:remind_ai/design/glass/glass_button.dart';
+import 'package:remind_ai/design/motion/enter_effects.dart';
+import 'package:remind_ai/design/rive/rive_widgets.dart';
+import 'package:remind_ai/design/theme/theme_extension.dart';
+import 'package:remind_ai/design/tokens/spacing.dart';
+import 'package:remind_ai/design/tokens/typography.dart';
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
-import 'package:remind_ai/utils/cosmic_background.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,42 +18,29 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = context.colorScheme;
+    final aurora = context.auroraTheme;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text.rich(
-          TextSpan(
-            style: context.textTheme.titleLarge?.copyWith(
-              color: cs.onSurface,
-              fontWeight: FontWeight.w400,
-            ),
-            children: [
-              TextSpan(
-                text: 'REM',
-                style: TextStyle(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w800,
-                  shadows: [
-                    Shadow(
-                      color: cs.primary.withValues(alpha: 0.75),
-                      blurRadius: 12,
-                    ),
-                  ],
-                ),
-              ),
-              const TextSpan(text: 'ind-Ai'),
-            ],
-          ),
-        ),
+        title: const LogoBreathing(size: 20),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
+            icon: const Icon(Icons.history_rounded),
+            color: aurora.textDim,
             tooltip: AppStrings.dreamHistory,
             onPressed: () => context.push(AppRoute.history.route),
           ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            color: aurora.textDim,
+            tooltip: AppStrings.settings,
+            onPressed: () => context.push(AppRoute.settings.route),
+          ),
+          const Gap(AppSpacing.xs),
         ],
       ),
-      body: CosmicBackground(
+      body: QuietSky(
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
@@ -56,69 +49,55 @@ class HomeScreen extends StatelessWidget {
                 padding: context.contentPadding,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Spacer(),
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: cs.primary.withValues(alpha: 0.35),
-                            blurRadius: 40,
-                            spreadRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.auto_stories_outlined,
-                        size: context.isDesktop ? 88 : 72,
-                        color: cs.primary,
-                      ),
-                    ),
-                    const Gap(28),
+                    Text(
+                      AppStrings.homeKicker,
+                      style: AppTypography.sectionLabel(aurora.accent),
+                    ).animateFade(key: const ValueKey('home-kicker')),
+                    const Gap(AppSpacing.md),
                     Text(
                       AppStrings.homeTagline,
-                      textAlign: TextAlign.center,
-                      style: context.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
+                      style: context.textTheme.displaySmall?.copyWith(
                         color: cs.onSurface,
-                        shadows: [
-                          Shadow(
-                            color: cs.primary.withValues(alpha: 0.45),
-                            blurRadius: 14,
-                          ),
-                        ],
+                        height: 1.1,
                       ),
-                    ),
-                    const Gap(16),
+                    ).animateRise(key: const ValueKey('home-tagline')),
+                    const Gap(AppSpacing.md),
                     Text(
                       AppStrings.homeBody,
-                      textAlign: TextAlign.center,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurfaceVariant,
-                        height: 1.6,
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        color: aurora.textDim,
+                        height: 1.55,
                       ),
+                    ).animateRise(
+                      key: const ValueKey('home-body'),
+                      delay: const Duration(milliseconds: 80),
+                    ),
+                    const Gap(AppSpacing.xxl),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GlassButton(
+                            onPressed: () =>
+                                context.push(AppRoute.dreamInput.route),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(AppStrings.interpretDream),
+                                Gap(8),
+                                Icon(Icons.arrow_forward_rounded, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ).animateRise(
+                      key: const ValueKey('home-cta'),
+                      delay: const Duration(milliseconds: 160),
                     ),
                     const Spacer(),
-                    Text(
-                      AppStrings.homeCtaHint,
-                      textAlign: TextAlign.center,
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    const Gap(20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () =>
-                            context.push(AppRoute.dreamInput.route),
-                        icon: const Icon(Icons.auto_stories),
-                        label: const Text(AppStrings.interpretDream),
-                      ),
-                    ),
-                    const Gap(32),
                   ],
                 ),
               ),

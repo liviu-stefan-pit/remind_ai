@@ -4,26 +4,31 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:remind_ai/constants/app_strings.dart';
+import 'package:remind_ai/design/background/quiet_sky.dart';
+import 'package:remind_ai/design/glass/hover_lift.dart';
+import 'package:remind_ai/design/motion/enter_effects.dart';
+import 'package:remind_ai/design/rive/rive_widgets.dart';
+import 'package:remind_ai/design/theme/theme_extension.dart';
+import 'package:remind_ai/design/tokens/spacing.dart';
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
 import 'package:remind_ai/features/dreams/domain/dream_style.dart';
 import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart';
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
-import 'package:remind_ai/utils/cosmic_background.dart';
 
-IconData _dreamStyleIcon(DreamStyle style) => switch (style) {
-  DreamStyle.standard => Icons.book_outlined,
-  DreamStyle.psychological => Icons.psychology_outlined,
-  DreamStyle.mythic => Icons.auto_awesome_outlined,
-  DreamStyle.creative => Icons.edit_outlined,
-};
+Color _dreamStyleColor(DreamStyle style, ThemeData theme) => switch (style) {
+      DreamStyle.standard => theme.colorScheme.primary,
+      DreamStyle.psychological => theme.colorScheme.secondary,
+      DreamStyle.mythic => theme.colorScheme.tertiary,
+      DreamStyle.creative => theme.colorScheme.error,
+    };
 
 String _dreamStyleLabel(DreamStyle style) => switch (style) {
-  DreamStyle.standard => 'Standard',
-  DreamStyle.psychological => 'Psychological',
-  DreamStyle.mythic => 'Mythic',
-  DreamStyle.creative => 'Creative',
-};
+      DreamStyle.standard => 'Standard',
+      DreamStyle.psychological => 'Psychological',
+      DreamStyle.mythic => 'Mythic',
+      DreamStyle.creative => 'Creative',
+    };
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -31,48 +36,57 @@ class HistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final entries = ref.watch(dreamHistoryLogicProvider);
+    final aurora = context.auroraTheme;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(title: const Text(AppStrings.dreamHistory)),
-      body: CosmicBackground(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: context.maxContentWidth),
-            child: entries.isEmpty
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.auto_awesome_outlined,
-                        size: 64,
-                        color: context.colorScheme.onSurfaceVariant,
+      body: QuietSky(
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints:
+                  BoxConstraints(maxWidth: context.maxContentWidth),
+              child: entries.isEmpty
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const EmptyHistoryIllustration(),
+                        const Gap(AppSpacing.lg),
+                        Text(
+                          AppStrings.noHistoryYet,
+                          textAlign: TextAlign.center,
+                          style: context.textTheme.titleMedium?.copyWith(
+                            color: aurora.textDim,
+                          ),
+                        ).animateFade(key: const ValueKey('history-empty')),
+                      ],
+                    )
+                  : ListView.separated(
+                      padding: context.contentPadding.add(
+                        const EdgeInsets.symmetric(
+                            vertical: AppSpacing.lg),
                       ),
-                      const Gap(16),
-                      Text(
-                        AppStrings.noHistoryYet,
-                        textAlign: TextAlign.center,
-                        style: context.textTheme.titleMedium?.copyWith(
-                          color: context.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.separated(
-                    itemCount: entries.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (_, i) {
-                      final entry = entries[i];
-                      return _DreamHistoryTile(
-                        entry: entry,
-                        onTap: () =>
-                            context.push(AppRoute.result.route, extra: entry),
-                        onDeleteConfirmed: () => ref
-                            .read(dreamHistoryLogicProvider.notifier)
-                            .delete(entry.id),
-                      );
-                    },
-                  ),
+                      itemCount: entries.length,
+                      separatorBuilder: (_, __) =>
+                          const Gap(AppSpacing.xs),
+                      itemBuilder: (_, i) {
+                        final entry = entries[i];
+                        return _DreamHistoryTile(
+                          entry: entry,
+                          index: i,
+                          onTap: () => context.push(
+                            AppRoute.result.route,
+                            extra: entry,
+                          ),
+                          onDelete: () => ref
+                              .read(dreamHistoryLogicProvider.notifier)
+                              .delete(entry.id),
+                        );
+                      },
+                    ),
+            ),
           ),
         ),
       ),
@@ -83,13 +97,15 @@ class HistoryScreen extends ConsumerWidget {
 class _DreamHistoryTile extends StatelessWidget {
   const _DreamHistoryTile({
     required this.entry,
+    required this.index,
     required this.onTap,
-    required this.onDeleteConfirmed,
+    required this.onDelete,
   });
 
   final DreamEntry entry;
+  final int index;
   final VoidCallback onTap;
-  final VoidCallback onDeleteConfirmed;
+  final VoidCallback onDelete;
 
   Future<void> _confirmDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -112,38 +128,84 @@ class _DreamHistoryTile extends StatelessWidget {
         ],
       ),
     );
-    if (confirmed == true) onDeleteConfirmed();
+    if (confirmed == true) onDelete();
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.colorScheme;
-    final tt = context.textTheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final aurora = context.auroraTheme;
     final dateStr = DateFormat('MMM d, yyyy').format(entry.createdAt);
-    final styleLabel = _dreamStyleLabel(entry.style);
-    final styleIcon = _dreamStyleIcon(entry.style);
+    final styleColor = _dreamStyleColor(entry.style, theme);
 
-    return ListTile(
-      onTap: onTap,
-      leading: CircleAvatar(
-        backgroundColor: cs.secondaryContainer,
-        child: Icon(styleIcon, size: 20, color: cs.onSecondaryContainer),
+    return Dismissible(
+      key: ValueKey(entry.id),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => onDelete(),
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: AppSpacing.lg),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: cs.error.withValues(alpha: 0.18),
+        ),
+        child: Icon(Icons.delete_outline, color: cs.error),
       ),
-      title: Text(
-        entry.dreamText.trim(),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: tt.bodyMedium,
-      ),
-      subtitle: Text(
-        '$dateStr · $styleLabel',
-        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-      ),
-      trailing: IconButton(
-        icon: const Icon(Icons.delete_outline),
-        color: cs.onSurfaceVariant,
-        onPressed: () => _confirmDelete(context),
-      ),
+      child: HoverLift(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.md,
+          ),
+          decoration: BoxDecoration(
+            color: aurora.bgElevated.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: aurora.border, width: 1),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: styleColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const Gap(AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.dreamText.trim(),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: cs.onSurface,
+                      ),
+                    ),
+                    const Gap(4),
+                    Text(
+                      '$dateStr · ${_dreamStyleLabel(entry.style)}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: aurora.textDim,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 20),
+                color: aurora.textDim,
+                onPressed: () => _confirmDelete(context),
+              ),
+            ],
+          ),
+        ),
+      ).animateStagger(index, key: ValueKey('history-${entry.id}')),
     );
   }
 }

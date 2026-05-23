@@ -28,10 +28,42 @@ abstract final class AppStrings {
   static const String cancel = 'Cancel';
 
   // Home screen
-  static const String homeTagline =
-      "Your brain is weird. Let's figure out why.";
+  static const String homeKicker = 'GOOD MORNING';
+  static const String homeTagline = 'What did you dream?';
   static const String homeBody =
-      'Dump your bizarre nocturnal adventures here and let AI decode the chaos. '
-      'Dream journaling, but make it actually interesting.';
+      'Capture the fragments before they fade. Let us help you read what your mind was telling you.';
   static const String homeCtaHint = 'Your subconscious awaits...';
+
+  // Settings
+  static const String settings = 'Settings';
+  static const String appearance = 'Appearance';
+  static const String theme = 'Theme';
+  static const String themeDark = 'Dark';
+  static const String themeLight = 'Light';
+  static const String themeSystem = 'System';
+  static const String reduceMotion = 'Reduce motion';
+  static const String reduceMotionHint =
+      'Disables sky animation and heavy effects';
+  static const String ambientMotion = 'Background motion';
+  static const String ambientOff = 'Off';
+  static const String ambientCalm = 'Calm';
+  static const String ambientLively = 'Lively';
+  static const String account = 'Account';
+  static const String proActive = 'Pro active';
+  static const String proActiveHint = 'All interpretation styles unlocked';
+  static const String proUpsellHint =
+      'Unlock Psychological, Mythic, and Creative styles';
+  static const String data = 'Data';
+  static const String clearHistory = 'Clear dream history';
+  static const String clearHistoryConfirmTitle = 'Clear all dreams?';
+  static const String clearHistoryConfirmMessage =
+      'Every saved dream will be permanently removed from this device.';
+  static const String historyCleared = 'Dream history cleared';
+  static const String about = 'About';
+  static const String versionLabel = 'Version 1.0.0';
+  static const String markOnboardingSeen = 'Mark onboarding complete';
+  static const String onboardingBegin = 'Begin dreaming';
+  static const String newDream = 'New dream';
+  static const String share = 'Share';
+  static const String saved = 'Saved';
 }

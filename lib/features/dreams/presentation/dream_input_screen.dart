@@ -5,12 +5,18 @@ import 'package:go_router/go_router.dart';
 import 'package:remind_ai/config/access_tier/access_tier_logic.dart';
 import 'package:remind_ai/constants/app_strings.dart';
 import 'package:remind_ai/core/errors/app_exception.dart';
+import 'package:remind_ai/design/background/quiet_sky.dart';
+import 'package:remind_ai/design/glass/glass_button.dart';
+import 'package:remind_ai/design/glass/glass_field.dart';
+import 'package:remind_ai/design/motion/enter_effects.dart';
+import 'package:remind_ai/design/theme/theme_extension.dart';
+import 'package:remind_ai/design/tokens/spacing.dart';
+import 'package:remind_ai/design/tokens/typography.dart';
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
 import 'package:remind_ai/features/dreams/domain/dream_style.dart';
 import 'package:remind_ai/features/dreams/presentation/submit_dream_logic.dart';
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
-import 'package:remind_ai/utils/cosmic_background.dart';
 
 class DreamInputScreen extends ConsumerStatefulWidget {
   const DreamInputScreen({super.key});
@@ -22,18 +28,28 @@ class DreamInputScreen extends ConsumerStatefulWidget {
 class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
   final _formKey = GlobalKey<FormState>();
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
   DreamStyle _selectedStyle = DreamStyle.standard;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isPro = ref.watch(accessTierLogicProvider).tier.isPro;
-    final isLoading = ref.watch(submitDreamLogicProvider) is AsyncLoading;
+    final submitState = ref.watch(submitDreamLogicProvider);
+    final isLoading = submitState is AsyncLoading;
+    final aurora = context.auroraTheme;
 
     ref.listen<AsyncValue<DreamEntry?>>(submitDreamLogicProvider, (_, next) {
       next.when(
@@ -47,76 +63,94 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
           final message = error is DailyLimitException
               ? AppStrings.dailyLimitReached
               : AppStrings.unexpectedError;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(message)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
         },
       );
     });
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(title: const Text(AppStrings.interpretDream)),
-      body: CosmicBackground(
-        child: Form(
-          key: _formKey,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: context.maxContentWidth),
-              child: SingleChildScrollView(
-                padding: context.contentPadding.add(
-                  const EdgeInsets.symmetric(vertical: 20),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.describeDreamLabel,
-                      style: context.textTheme.titleMedium,
-                    ),
-                    const Gap(8),
-                    TextFormField(
-                      controller: _controller,
-                      minLines: 5,
-                      maxLines: 12,
-                      textInputAction: TextInputAction.newline,
-                      decoration: const InputDecoration(
-                        hintText: AppStrings.describeDreamHint,
-                        border: OutlineInputBorder(),
+      body: QuietSky(
+        child: SafeArea(
+          child: Form(
+            key: _formKey,
+            child: Center(
+              child: ConstrainedBox(
+                constraints:
+                    BoxConstraints(maxWidth: context.maxContentWidth),
+                child: SingleChildScrollView(
+                  padding: context.contentPadding.add(
+                    const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.describeDreamLabel,
+                        style: context.textTheme.headlineSmall,
+                      ).animateRise(key: const ValueKey('input-label')),
+                      const Gap(AppSpacing.md),
+                      GlassField(
+                        focused: _focusNode.hasFocus,
+                        child: TextFormField(
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          minLines: 6,
+                          maxLines: 14,
+                          textInputAction: TextInputAction.newline,
+                          style: AppTypography.serifBody(
+                            context.colorScheme.onSurface,
+                            size: 16,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: AppStrings.describeDreamHint,
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            hintStyle: TextStyle(
+                              color: aurora.textDim,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                          validator: (value) {
+                            final trimmed = value?.trim() ?? '';
+                            if (trimmed.length < 20) {
+                              return AppStrings.minCharsError;
+                            }
+                            return null;
+                          },
+                        ),
+                      ).animateRise(
+                        key: const ValueKey('input-field'),
+                        delay: const Duration(milliseconds: 80),
                       ),
-                      validator: (value) {
-                        final trimmed = value?.trim() ?? '';
-                        if (trimmed.length < 20)
-                          return AppStrings.minCharsError;
-                        return null;
-                      },
-                    ),
-                    const Gap(24),
-                    Text(
-                      AppStrings.interpretationStyle,
-                      style: context.textTheme.titleMedium,
-                    ),
-                    const Gap(12),
-                    _buildStyleGrid(isPro: isPro),
-                    const Gap(32),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: isLoading ? null : _submit,
-                        child: isLoading
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    context.colorScheme.onPrimary,
-                                  ),
-                                ),
-                              )
-                            : const Text(AppStrings.interpret),
+                      const Gap(AppSpacing.xl),
+                      Text(
+                        AppStrings.interpretationStyle,
+                        style: AppTypography.sectionLabel(aurora.textDim),
+                      ).animateFade(key: const ValueKey('input-style-label')),
+                      const Gap(AppSpacing.sm),
+                      _buildStyleGrid(isPro: isPro),
+                      const Gap(AppSpacing.xl),
+                      SizedBox(
+                        width: double.infinity,
+                        child: GlassButton(
+                          onPressed: _submit,
+                          isLoading: isLoading,
+                          child: const Text(AppStrings.interpret),
+                        ),
+                      ).animateRise(
+                        key: const ValueKey('input-cta'),
+                        delay: const Duration(milliseconds: 160),
                       ),
-                    ),
-                  ],
+                      const Gap(AppSpacing.lg),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -127,81 +161,53 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
   }
 
   Widget _buildStyleGrid({required bool isPro}) {
-    bool isLocked(DreamStyle style) => !isPro && style != DreamStyle.standard;
+    bool isLocked(DreamStyle s) => !isPro && s != DreamStyle.standard;
+    Widget card(DreamStyle style, int index) => _StyleTile(
+          style: style,
+          isSelected: _selectedStyle == style,
+          isLocked: isLocked(style),
+          onTap: () {
+            if (isLocked(style)) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '${AppStrings.upgradeToPro} ${_StyleTile.labelFor(style)}.',
+                  ),
+                ),
+              );
+            } else {
+              setState(() => _selectedStyle = style);
+            }
+          },
+        );
 
-    Widget card(DreamStyle style) => _StyleCard(
-      style: style,
-      isSelected: _selectedStyle == style,
-      isLocked: isLocked(style),
-      onTap: () {
-        if (isLocked(style)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '${AppStrings.upgradeToPro} ${_StyleCard.labelFor(style)}.',
-              ),
-            ),
-          );
-        } else {
-          setState(() => _selectedStyle = style);
-        }
-      },
-    );
-
-    if (!context.isMobile) {
-      return IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(child: card(DreamStyle.standard)),
-            const Gap(12),
-            Expanded(child: card(DreamStyle.psychological)),
-            const Gap(12),
-            Expanded(child: card(DreamStyle.mythic)),
-            const Gap(12),
-            Expanded(child: card(DreamStyle.creative)),
-          ],
-        ),
-      );
-    }
-
-    return Column(
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      mainAxisSpacing: AppSpacing.sm,
+      crossAxisSpacing: AppSpacing.sm,
+      childAspectRatio: 2.6,
       children: [
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: card(DreamStyle.standard)),
-              const Gap(12),
-              Expanded(child: card(DreamStyle.psychological)),
-            ],
-          ),
-        ),
-        const Gap(12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: card(DreamStyle.mythic)),
-              const Gap(12),
-              Expanded(child: card(DreamStyle.creative)),
-            ],
-          ),
-        ),
+        card(DreamStyle.standard, 0),
+        card(DreamStyle.psychological, 1),
+        card(DreamStyle.mythic, 2),
+        card(DreamStyle.creative, 3),
       ],
     );
   }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    ref
-        .read(submitDreamLogicProvider.notifier)
-        .submit(dreamText: _controller.text.trim(), style: _selectedStyle);
+    ref.read(submitDreamLogicProvider.notifier).submit(
+          dreamText: _controller.text.trim(),
+          style: _selectedStyle,
+        );
   }
 }
 
-class _StyleCard extends StatelessWidget {
-  const _StyleCard({
+class _StyleTile extends StatelessWidget {
+  const _StyleTile({
     required this.style,
     required this.isSelected,
     required this.isLocked,
@@ -213,82 +219,70 @@ class _StyleCard extends StatelessWidget {
   final bool isLocked;
   final VoidCallback onTap;
 
-  static IconData _iconFor(DreamStyle style) => switch (style) {
-    DreamStyle.standard => Icons.book_outlined,
-    DreamStyle.psychological => Icons.psychology_outlined,
-    DreamStyle.mythic => Icons.auto_awesome_outlined,
-    DreamStyle.creative => Icons.edit_outlined,
-  };
+  static IconData _iconFor(DreamStyle s) => switch (s) {
+        DreamStyle.standard => Icons.book_outlined,
+        DreamStyle.psychological => Icons.psychology_outlined,
+        DreamStyle.mythic => Icons.auto_awesome_outlined,
+        DreamStyle.creative => Icons.edit_outlined,
+      };
 
-  static String labelFor(DreamStyle style) => switch (style) {
-    DreamStyle.standard => 'Standard',
-    DreamStyle.psychological => 'Psychological',
-    DreamStyle.mythic => 'Mythic',
-    DreamStyle.creative => 'Creative',
-  };
-
-  static String _subtitleFor(DreamStyle style) => switch (style) {
-    DreamStyle.standard => 'Classic symbol decoder',
-    DreamStyle.psychological => 'What Jung would say',
-    DreamStyle.mythic => 'Ancient archetypes',
-    DreamStyle.creative => 'Poetic reimagining',
-  };
+  static String labelFor(DreamStyle s) => switch (s) {
+        DreamStyle.standard => 'Standard',
+        DreamStyle.psychological => 'Psychological',
+        DreamStyle.mythic => 'Mythic',
+        DreamStyle.creative => 'Creative',
+      };
 
   @override
   Widget build(BuildContext context) {
     final cs = context.colorScheme;
-    final tt = context.textTheme;
+    final aurora = context.auroraTheme;
 
-    final dimColor = cs.onSurface.withValues(alpha: 0.38);
-    final iconColor = isLocked
-        ? dimColor
-        : isSelected
-        ? cs.primary
-        : cs.onSurfaceVariant;
-    final bgColor = isLocked
-        ? cs.surfaceContainerHighest
-        : isSelected
-        ? cs.primaryContainer
-        : cs.surfaceContainerLow;
-    final borderColor = isSelected && !isLocked
-        ? cs.primary
-        : cs.outlineVariant;
-    final borderWidth = isSelected && !isLocked ? 2.0 : 1.0;
+    final borderColor = isSelected
+        ? aurora.accent
+        : aurora.border;
+    final fg = isLocked
+        ? aurora.textDim
+        : (isSelected ? aurora.accent : cs.onSurface);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: borderColor, width: borderWidth),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(_iconFor(style), size: 22, color: iconColor),
-                if (isLocked)
-                  Icon(Icons.lock_outline, size: 16, color: dimColor),
-              ],
-            ),
-            const Gap(8),
-            Text(
-              labelFor(style),
-              style: tt.titleSmall?.copyWith(color: isLocked ? dimColor : null),
-            ),
-            const Gap(2),
-            Text(
-              _subtitleFor(style),
-              style: tt.bodySmall?.copyWith(
-                color: isLocked ? dimColor : cs.onSurfaceVariant,
+    return MouseRegion(
+      cursor: isLocked
+          ? SystemMouseCursors.forbidden
+          : SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? aurora.accent.withValues(alpha: 0.06)
+                : aurora.bgElevated.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          child: Row(
+            children: [
+              Icon(_iconFor(style), size: 18, color: fg),
+              const Gap(AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  labelFor(style),
+                  style: context.textTheme.titleSmall?.copyWith(color: fg),
+                ),
               ),
-            ),
-          ],
+              if (isLocked)
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: aurora.accent.withValues(alpha: 0.6),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

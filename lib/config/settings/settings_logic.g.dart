@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'theme_logic.dart';
+part of 'settings_logic.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,51 +9,51 @@ part of 'theme_logic.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(ThemeLogic)
-final themeLogicProvider = ThemeLogicProvider._();
+@ProviderFor(SettingsLogic)
+final settingsLogicProvider = SettingsLogicProvider._();
 
-final class ThemeLogicProvider
-    extends $NotifierProvider<ThemeLogic, ThemeUiModel> {
-  ThemeLogicProvider._()
+final class SettingsLogicProvider
+    extends $NotifierProvider<SettingsLogic, SettingsState> {
+  SettingsLogicProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'themeLogicProvider',
+        name: r'settingsLogicProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$themeLogicHash();
+  String debugGetCreateSourceHash() => _$settingsLogicHash();
 
   @$internal
   @override
-  ThemeLogic create() => ThemeLogic();
+  SettingsLogic create() => SettingsLogic();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ThemeUiModel value) {
+  Override overrideWithValue(SettingsState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<ThemeUiModel>(value),
+      providerOverride: $SyncValueProvider<SettingsState>(value),
     );
   }
 }
 
-String _$themeLogicHash() => r'c1ca0371915b4666a5fb078b64b5e4de2c3e95dc';
+String _$settingsLogicHash() => r'85f3465e453a446906268d8471ef5677a07c8dfc';
 
-abstract class _$ThemeLogic extends $Notifier<ThemeUiModel> {
-  ThemeUiModel build();
+abstract class _$SettingsLogic extends $Notifier<SettingsState> {
+  SettingsState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<ThemeUiModel, ThemeUiModel>;
+    final ref = this.ref as $Ref<SettingsState, SettingsState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<ThemeUiModel, ThemeUiModel>,
-              ThemeUiModel,
+              AnyNotifier<SettingsState, SettingsState>,
+              SettingsState,
               Object?,
               Object?
             >;
