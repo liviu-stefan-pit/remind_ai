@@ -14,7 +14,7 @@ class ThemeLogic extends _$ThemeLogic {
     ThemeMode themeMode = ThemeMode.system;
     final Box<String> prefsBox = Hive.box<String>('prefs');
     final String mode =
-        prefsBox.get('themeMode', defaultValue: ThemeMode.system.toString())
+        prefsBox.get('themeMode', defaultValue: ThemeMode.dark.toString())
             as String;
     switch (mode) {
       case 'ThemeMode.dark':

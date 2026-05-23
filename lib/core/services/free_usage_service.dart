@@ -3,7 +3,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'free_usage_service.g.dart';
 
-const _kLastFreeUsageDateKey = 'lastFreeUsageDate';
+const _kFreeUsageDateKey = 'freeUsageDate';
+const _kFreeUsageCountKey = 'freeUsageCount';
+const _kMaxDailyFreeUsage = 3;
 
 @Riverpod(keepAlive: true)
 FreeUsageService freeUsageService(Ref ref) {
@@ -15,25 +17,28 @@ class FreeUsageService {
 
   final Box<String> _box;
 
-  DateTime? getLastFreeUsageDate() {
-    final raw = _box.get(_kLastFreeUsageDateKey);
-    if (raw == null) return null;
-    return DateTime.tryParse(raw);
+  String _todayKey() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
-  Future<void> recordFreeUsage() =>
-      _box.put(_kLastFreeUsageDateKey, DateTime.now().toIso8601String());
-
-  /// Returns true only if the user has never made a free request,
-  /// or if their last free request was on a previous calendar day.
-  bool canUseFreeRequest() {
-    final last = getLastFreeUsageDate();
-    if (last == null) return true;
-
-    final today = DateTime.now();
-    final lastDay = DateTime(last.year, last.month, last.day);
-    final todayDay = DateTime(today.year, today.month, today.day);
-
-    return lastDay.isBefore(todayDay);
+  int getTodayUsageCount() {
+    final storedDate = _box.get(_kFreeUsageDateKey);
+    if (storedDate != _todayKey()) return 0;
+    return int.tryParse(_box.get(_kFreeUsageCountKey) ?? '0') ?? 0;
   }
+
+  Future<void> recordFreeUsage() async {
+    final today = _todayKey();
+    final storedDate = _box.get(_kFreeUsageDateKey);
+    final currentCount = storedDate == today
+        ? (int.tryParse(_box.get(_kFreeUsageCountKey) ?? '0') ?? 0)
+        : 0;
+    await _box.put(_kFreeUsageDateKey, today);
+    await _box.put(_kFreeUsageCountKey, (currentCount + 1).toString());
+  }
+
+  /// Returns true if the user has used fewer than [_kMaxDailyFreeUsage]
+  /// requests today.
+  bool canUseFreeRequest() => getTodayUsageCount() < _kMaxDailyFreeUsage;
 }

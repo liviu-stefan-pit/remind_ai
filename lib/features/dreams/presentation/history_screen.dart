@@ -9,6 +9,7 @@ import 'package:remind_ai/features/dreams/domain/dream_style.dart';
 import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart';
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
+import 'package:remind_ai/utils/cosmic_background.dart';
 
 IconData _dreamStyleIcon(DreamStyle style) => switch (style) {
   DreamStyle.standard => Icons.book_outlined,
@@ -33,41 +34,48 @@ class HistoryScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.dreamHistory)),
-      body: entries.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.auto_awesome_outlined,
-                    size: 64,
-                    color: context.colorScheme.onSurfaceVariant,
+      body: CosmicBackground(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: context.maxContentWidth),
+            child: entries.isEmpty
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.auto_awesome_outlined,
+                        size: 64,
+                        color: context.colorScheme.onSurfaceVariant,
+                      ),
+                      const Gap(16),
+                      Text(
+                        AppStrings.noHistoryYet,
+                        textAlign: TextAlign.center,
+                        style: context.textTheme.titleMedium?.copyWith(
+                          color: context.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.separated(
+                    itemCount: entries.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (_, i) {
+                      final entry = entries[i];
+                      return _DreamHistoryTile(
+                        entry: entry,
+                        onTap: () =>
+                            context.push(AppRoute.result.route, extra: entry),
+                        onDeleteConfirmed: () => ref
+                            .read(dreamHistoryLogicProvider.notifier)
+                            .delete(entry.id),
+                      );
+                    },
                   ),
-                  const Gap(16),
-                  Text(
-                    AppStrings.noHistoryYet,
-                    style: context.textTheme.titleMedium?.copyWith(
-                      color: context.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.separated(
-              itemCount: entries.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (_, i) {
-                final entry = entries[i];
-                return _DreamHistoryTile(
-                  entry: entry,
-                  onTap: () =>
-                      context.push(AppRoute.result.route, extra: entry),
-                  onDeleteConfirmed: () => ref
-                      .read(dreamHistoryLogicProvider.notifier)
-                      .delete(entry.id),
-                );
-              },
-            ),
+          ),
+        ),
+      ),
     );
   }
 }

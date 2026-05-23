@@ -10,6 +10,7 @@ import 'package:remind_ai/features/dreams/domain/dream_style.dart';
 import 'package:remind_ai/features/dreams/presentation/submit_dream_logic.dart';
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
+import 'package:remind_ai/utils/cosmic_background.dart';
 
 class DreamInputScreen extends ConsumerStatefulWidget {
   const DreamInputScreen({super.key});
@@ -55,60 +56,70 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.interpretDream)),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppStrings.describeDreamLabel,
-                style: context.textTheme.titleMedium,
-              ),
-              const Gap(8),
-              TextFormField(
-                controller: _controller,
-                minLines: 5,
-                maxLines: 12,
-                textInputAction: TextInputAction.newline,
-                decoration: const InputDecoration(
-                  hintText: AppStrings.describeDreamHint,
-                  border: OutlineInputBorder(),
+      body: CosmicBackground(
+        child: Form(
+          key: _formKey,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: context.maxContentWidth),
+              child: SingleChildScrollView(
+                padding: context.contentPadding.add(
+                  const EdgeInsets.symmetric(vertical: 20),
                 ),
-                validator: (value) {
-                  final trimmed = value?.trim() ?? '';
-                  if (trimmed.length < 20) return AppStrings.minCharsError;
-                  return null;
-                },
-              ),
-              const Gap(24),
-              Text(
-                AppStrings.interpretationStyle,
-                style: context.textTheme.titleMedium,
-              ),
-              const Gap(12),
-              _buildStyleGrid(isPro: isPro),
-              const Gap(32),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: isLoading ? null : _submit,
-                  child: isLoading
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              context.colorScheme.onPrimary,
-                            ),
-                          ),
-                        )
-                      : const Text(AppStrings.interpret),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.describeDreamLabel,
+                      style: context.textTheme.titleMedium,
+                    ),
+                    const Gap(8),
+                    TextFormField(
+                      controller: _controller,
+                      minLines: 5,
+                      maxLines: 12,
+                      textInputAction: TextInputAction.newline,
+                      decoration: const InputDecoration(
+                        hintText: AppStrings.describeDreamHint,
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        final trimmed = value?.trim() ?? '';
+                        if (trimmed.length < 20)
+                          return AppStrings.minCharsError;
+                        return null;
+                      },
+                    ),
+                    const Gap(24),
+                    Text(
+                      AppStrings.interpretationStyle,
+                      style: context.textTheme.titleMedium,
+                    ),
+                    const Gap(12),
+                    _buildStyleGrid(isPro: isPro),
+                    const Gap(32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: isLoading ? null : _submit,
+                        child: isLoading
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    context.colorScheme.onPrimary,
+                                  ),
+                                ),
+                              )
+                            : const Text(AppStrings.interpret),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -137,24 +148,45 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
       },
     );
 
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    if (!context.isMobile) {
+      return IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(child: card(DreamStyle.standard)),
             const Gap(12),
             Expanded(child: card(DreamStyle.psychological)),
-          ],
-        ),
-        const Gap(12),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+            const Gap(12),
             Expanded(child: card(DreamStyle.mythic)),
             const Gap(12),
             Expanded(child: card(DreamStyle.creative)),
           ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: card(DreamStyle.standard)),
+              const Gap(12),
+              Expanded(child: card(DreamStyle.psychological)),
+            ],
+          ),
+        ),
+        const Gap(12),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: card(DreamStyle.mythic)),
+              const Gap(12),
+              Expanded(child: card(DreamStyle.creative)),
+            ],
+          ),
         ),
       ],
     );
@@ -196,10 +228,10 @@ class _StyleCard extends StatelessWidget {
   };
 
   static String _subtitleFor(DreamStyle style) => switch (style) {
-    DreamStyle.standard => 'Universal meanings',
-    DreamStyle.psychological => 'Jungian analysis',
-    DreamStyle.mythic => 'Archetypal lens',
-    DreamStyle.creative => 'Poetic narrative',
+    DreamStyle.standard => 'Classic symbol decoder',
+    DreamStyle.psychological => 'What Jung would say',
+    DreamStyle.mythic => 'Ancient archetypes',
+    DreamStyle.creative => 'Poetic reimagining',
   };
 
   @override
