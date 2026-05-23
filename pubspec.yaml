@@ -37,6 +37,9 @@ dependencies:
   # Routing
   go_router: ^17.0.1
 
+  # Network
+  dio: ^5.4.0
+
   # Local storage
   hive_ce: ^2.11.1
   hive_ce_flutter: ^2.3.0

@@ -16,3 +16,8 @@ final class NetworkException extends AppException {
 final class AuthException extends AppException {
   const AuthException(super.message);
 }
+
+final class DailyLimitException extends AppException {
+  const DailyLimitException()
+    : super('Daily free interpretation limit reached.');
+}
