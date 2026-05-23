@@ -7,12 +7,16 @@ import 'package:remind_ai/hive/hive_adapters.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
+    registerAdapter(DreamEntryAdapter());
+    registerAdapter(DreamStyleAdapter());
     registerAdapter(ThemeUiModelAdapter());
   }
 }
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
+    registerAdapter(DreamEntryAdapter());
+    registerAdapter(DreamStyleAdapter());
     registerAdapter(ThemeUiModelAdapter());
   }
 }
