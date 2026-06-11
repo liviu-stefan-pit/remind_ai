@@ -7,6 +7,7 @@ import 'package:remind_ai/features/dreams/data/datasources/dream_local_datasourc
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
 import 'package:remind_ai/features/dreams/domain/dream_style.dart';
 import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart';
+import 'package:remind_ai/utils/id_generator.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'submit_dream_logic.g.dart';
@@ -38,7 +39,7 @@ class SubmitDreamLogic extends _$SubmitDreamLogic {
           .generate(prompt: dreamText, systemInstruction: _promptFor(style));
 
       final entry = DreamEntry(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: generateId(),
         dreamText: dreamText,
         style: style,
         createdAt: DateTime.now(),
@@ -63,7 +64,6 @@ class SubmitDreamLogic extends _$SubmitDreamLogic {
   String _promptFor(DreamStyle style) {
     return switch (style) {
       DreamStyle.standard => AppPrompts.standard,
-      // TODO(pro-tier): replace with dedicated prompts when Pro personas are added.
       DreamStyle.psychological => AppPrompts.standard,
       DreamStyle.mythic => AppPrompts.standard,
       DreamStyle.creative => AppPrompts.standard,

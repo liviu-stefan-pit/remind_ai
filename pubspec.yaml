@@ -1,5 +1,5 @@
 name: remind_ai
-description: A cross-platform dream interpretation app.
+description: "REMind-Ai — AI-powered dream interpretation across four unique styles powered by Google Gemini."
 publish_to: 'none'
 
 # The following defines the version and build number for your application.
@@ -43,6 +43,7 @@ dependencies:
   # Local storage
   hive_ce: ^2.11.1
   hive_ce_flutter: ^2.3.0
+  flutter_secure_storage: ^9.2.4
 
   # Models
   freezed_annotation: ^3.1.0
@@ -57,9 +58,9 @@ dependencies:
 
   # Utils
   gap: ^3.0.1
-  logger: ^2.5.0
   intl: ^0.20.2
   path_provider: ^2.1.5
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +73,8 @@ dev_dependencies:
   riverpod_lint: ^3.1.0
   freezed: ^3.2.3
   hive_ce_generator: ^1.9.1
+  flutter_launcher_icons: ^0.14.4
+  msix: ^3.16.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -106,3 +109,26 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  assets:
+    - assets/icon/
+
+# Microsoft Store / MSIX package configuration (Windows).
+# Build with: dart run msix:create
+msix_config:
+  display_name: REMind-Ai
+  publisher_display_name: Liviu-Stefan Petroaia
+  # NOTE: MSIX identity names allow only letters, digits, periods and
+  # hyphens (no underscores), so this intentionally differs from the
+  # Android applicationId `com.remindai.remind_ai`.
+  identity_name: com.remindai.remindai
+  # Required for Microsoft Store submission. Reserve the app name in
+  # Partner Center, then paste the assigned Publisher Identity here, e.g.
+  #   publisher: CN=ABCD1234-1234-1234-1234-1234567890AB
+  # Leave commented for local/sideload builds (msix self-signs).
+  # publisher: CN=<from-partner-center>
+  msix_version: 1.0.0.0
+  capabilities: 'internetClient'
+  logo_path: assets/icon/icon.png
+  architecture: x64
+  store: false

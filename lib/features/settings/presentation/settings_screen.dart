@@ -8,12 +8,12 @@ import 'package:remind_ai/constants/app_strings.dart';
 import 'package:remind_ai/design/background/quiet_sky.dart';
 import 'package:remind_ai/design/glass/glass_chip.dart';
 import 'package:remind_ai/design/glass/liquid_panel.dart';
-import 'package:remind_ai/design/rive/rive_widgets.dart';
 import 'package:remind_ai/design/theme/theme_extension.dart';
 import 'package:remind_ai/design/tokens/spacing.dart';
 import 'package:remind_ai/design/tokens/typography.dart';
 import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -24,9 +24,6 @@ class SettingsScreen extends ConsumerWidget {
     final settings = ref.watch(settingsLogicProvider);
     final isPro = ref.watch(accessTierLogicProvider).tier.isPro;
     final aurora = context.auroraTheme;
-    final isDark = theme.themeMode == ThemeMode.dark ||
-        (theme.themeMode == ThemeMode.system &&
-            MediaQuery.platformBrightnessOf(context) == Brightness.dark);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -50,14 +47,53 @@ class SettingsScreen extends ConsumerWidget {
                       color: Colors.transparent,
                       child: Column(
                         children: [
-                          ListTile(
-                          leading: ThemeToggleIcon(isDark: isDark),
-                          title: const Text(AppStrings.theme),
-                          subtitle: Text(_themeLabel(theme.themeMode)),
-                          onTap: () => ref
-                              .read(themeLogicProvider.notifier)
-                              .toggleTheme(),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.md,
+                              AppSpacing.md,
+                              AppSpacing.md,
+                              AppSpacing.sm,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  AppStrings.theme,
+                                  style: context.textTheme.titleMedium,
+                                ),
+                                const Gap(AppSpacing.sm),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: SegmentedButton<ThemeMode>(
+                                    showSelectedIcon: false,
+                                    segments: const [
+                                      ButtonSegment(
+                                        value: ThemeMode.light,
+                                        icon: Icon(Icons.light_mode_outlined),
+                                        label: Text(AppStrings.themeLight),
+                                      ),
+                                      ButtonSegment(
+                                        value: ThemeMode.dark,
+                                        icon: Icon(Icons.dark_mode_outlined),
+                                        label: Text(AppStrings.themeDark),
+                                      ),
+                                      ButtonSegment(
+                                        value: ThemeMode.system,
+                                        icon: Icon(
+                                          Icons.brightness_auto_outlined,
+                                        ),
+                                        label: Text(AppStrings.themeSystem),
+                                      ),
+                                    ],
+                                    selected: {theme.themeMode},
+                                    onSelectionChanged: (selection) => ref
+                                        .read(themeLogicProvider.notifier)
+                                        .setThemeMode(selection.first),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         Divider(height: 1, color: aurora.border),
                         SwitchListTile(
                           title: const Text(AppStrings.reduceMotion),
@@ -154,6 +190,57 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                   const Gap(AppSpacing.lg),
+                  _SectionLabel(AppStrings.legal),
+                  LiquidPanel(
+                    padding: EdgeInsets.zero,
+                    enableHoverGlow: false,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: Icon(
+                              Icons.privacy_tip_outlined,
+                              color: aurora.accent,
+                            ),
+                            title: const Text(AppStrings.privacyPolicy),
+                            trailing: const Icon(
+                              Icons.open_in_new_rounded,
+                              size: 18,
+                            ),
+                            onTap: () => _openUrl(AppUrls.privacyPolicy),
+                          ),
+                          Divider(height: 1, color: aurora.border),
+                          ListTile(
+                            leading: Icon(
+                              Icons.description_outlined,
+                              color: aurora.accent,
+                            ),
+                            title: const Text(AppStrings.termsOfService),
+                            trailing: const Icon(
+                              Icons.open_in_new_rounded,
+                              size: 18,
+                            ),
+                            onTap: () => _openUrl(AppUrls.termsOfService),
+                          ),
+                          Divider(height: 1, color: aurora.border),
+                          ListTile(
+                            leading: Icon(
+                              Icons.code_rounded,
+                              color: aurora.accent,
+                            ),
+                            title: const Text(AppStrings.sourceCode),
+                            trailing: const Icon(
+                              Icons.open_in_new_rounded,
+                              size: 18,
+                            ),
+                            onTap: () => _openUrl(AppUrls.sourceCode),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Gap(AppSpacing.lg),
                   _SectionLabel(AppStrings.about),
                   LiquidPanel(
                     enableHoverGlow: false,
@@ -171,6 +258,14 @@ class SettingsScreen extends ConsumerWidget {
                             color: aurora.textDim,
                           ),
                         ),
+                        const Gap(AppSpacing.xs),
+                        Text(
+                          AppStrings.aiDisclaimer,
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: aurora.textDim,
+                            height: 1.4,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -184,11 +279,10 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  String _themeLabel(ThemeMode mode) => switch (mode) {
-        ThemeMode.dark => AppStrings.themeDark,
-        ThemeMode.light => AppStrings.themeLight,
-        ThemeMode.system => AppStrings.themeSystem,
-      };
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   String _ambientLabel(AmbientLevel level) => switch (level) {
         AmbientLevel.off => AppStrings.ambientOff,
@@ -218,7 +312,7 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (confirmed == true) {
-      ref.read(settingsLogicProvider.notifier).clearHistory();
+      await ref.read(settingsLogicProvider.notifier).clearHistory();
       ref.invalidate(dreamHistoryLogicProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

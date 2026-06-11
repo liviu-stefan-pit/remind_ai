@@ -7,8 +7,11 @@ abstract final class AppStrings {
       'Spill the subconscious tea... flying, falling, or your teeth again?';
   static const String interpretationStyle = 'How Do You Want to Dig In?';
   static const String interpret = 'Unravel It';
+  static const int dreamMaxChars = 2000;
   static const String minCharsError =
       'Your brain works harder than that — give us at least 20 characters.';
+  static const String maxCharsError =
+      'That is a novel. Keep it under 2000 characters.';
   static const String upgradeToPro = 'Unlock with Pro:';
   static const String dailyLimitReached =
       'Your subconscious needs rest too. 3 daily interpretations used — see you tomorrow!';
@@ -21,6 +24,8 @@ abstract final class AppStrings {
   static const String interpretation = 'The Cosmic Read';
   static const String noHistoryYet =
       'No visions logged yet. Your subconscious is waiting...';
+  static const String historyEmptyCta = 'Decode your first dream';
+  static const String copiedToClipboard = 'Copied to clipboard';
   static const String deleteConfirmTitle = 'Erase this vision?';
   static const String deleteConfirmMessage =
       'This dream entry will vanish from your device forever. Poof.';
@@ -66,4 +71,35 @@ abstract final class AppStrings {
   static const String newDream = 'New dream';
   static const String share = 'Share';
   static const String saved = 'Saved';
+
+  // Legal
+  static const String legal = 'Legal';
+  static const String privacyPolicy = 'Privacy Policy';
+  static const String termsOfService = 'Terms of Service';
+  static const String sourceCode = 'Source Code';
+  static const String ageGateLabel = 'I confirm I am 18 or older';
+  static const String ageGateRequired =
+      'Confirm you are 18+ to continue. Gemini API terms require it.';
+  static const String aiDisclaimer =
+      'AI-generated content. For entertainment only. Not medical, '
+      'psychological, or professional advice.';
+  static const String onboardingPrivacyTitle =
+      'Your journal lives on this device';
+  static const String onboardingPrivacyBody =
+      'Your dreams are saved only on this device. When you request an '
+      'interpretation, your dream text is sent securely to Google Gemini AI. '
+      'It is not stored by us.';
 }
+
+abstract final class AppUrls {
+  // NOTE: these must be LIVE before any store submission. Host PRIVACY_POLICY.md
+  // (e.g. GitHub Pages / Vercel static page) at these exact URLs, or update
+  // them here and in STORE_METADATA.md. See PUBLISH_NEXT_STEPS.md step 3.
+  static const String privacyPolicy =
+      'https://liviustefan.github.io/remind-ai/privacy';
+  static const String termsOfService =
+      'https://liviustefan.github.io/remind-ai/terms';
+  static const String sourceCode = 'https://github.com/liviustefan/remind-ai';
+  static const String contactEmail = 'liviustefan.petroaia@gmail.com';
+}
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:remind_ai/design/theme/theme_extension.dart';
 import 'package:remind_ai/design/tokens/motion.dart';
 
@@ -29,8 +30,19 @@ class _GlassButtonState extends State<GlassButton>
     with SingleTickerProviderStateMixin {
   bool _hovered = false;
   bool _pressed = false;
+  bool _focused = false;
 
   bool get _enabled => widget.onPressed != null && !widget.isLoading;
+
+  static const _shortcuts = <ShortcutActivator, Intent>{
+    SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+    SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+    SingleActivator(LogicalKeyboardKey.numpadEnter): ActivateIntent(),
+  };
+
+  void _activate() {
+    if (_enabled) widget.onPressed?.call();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,67 +58,82 @@ class _GlassButtonState extends State<GlassButton>
     final fg = widget.outlined
         ? aurora.accent
         : (_enabled ? const Color(0xFF1A1305) : cs.onSurface.withValues(alpha: 0.4));
+    final highlighted = (_hovered || _focused) && _enabled;
     final border = widget.outlined
         ? BorderSide(
-            color: _hovered && _enabled
-                ? aurora.accent
-                : aurora.borderStrong,
+            color: highlighted ? aurora.accent : aurora.borderStrong,
             width: 1,
           )
-        : BorderSide.none;
+        : (_focused && _enabled
+            ? BorderSide(color: aurora.accent, width: 2)
+            : BorderSide.none);
 
     final scale = !_enabled
         ? 1.0
         : _pressed
             ? 0.97
-            : (_hovered ? 1.01 : 1.0);
+            : (highlighted ? 1.01 : 1.0);
 
-    return MouseRegion(
-      cursor: _enabled
-          ? SystemMouseCursors.click
-          : SystemMouseCursors.forbidden,
-      onEnter: _enabled ? (_) => setState(() => _hovered = true) : null,
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: _enabled ? widget.onPressed : null,
-        onTapDown:
-            _enabled ? (_) => setState(() => _pressed = true) : null,
-        onTapUp: _enabled ? (_) => setState(() => _pressed = false) : null,
-        onTapCancel:
-            _enabled ? () => setState(() => _pressed = false) : null,
-        child: AnimatedScale(
-          duration: reduceMotion ? Duration.zero : AppMotion.quick,
-          curve: AppMotion.ease,
-          scale: scale,
-          child: AnimatedContainer(
+    return Semantics(
+      button: true,
+      enabled: _enabled,
+      child: FocusableActionDetector(
+        enabled: _enabled,
+        shortcuts: _shortcuts,
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              _activate();
+              return null;
+            },
+          ),
+        },
+        mouseCursor: _enabled
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.forbidden,
+        onShowHoverHighlight: (value) => setState(() => _hovered = value),
+        onShowFocusHighlight: (value) => setState(() => _focused = value),
+        child: GestureDetector(
+          onTap: _enabled ? widget.onPressed : null,
+          onTapDown:
+              _enabled ? (_) => setState(() => _pressed = true) : null,
+          onTapUp: _enabled ? (_) => setState(() => _pressed = false) : null,
+          onTapCancel:
+              _enabled ? () => setState(() => _pressed = false) : null,
+          child: AnimatedScale(
             duration: reduceMotion ? Duration.zero : AppMotion.quick,
             curve: AppMotion.ease,
-            height: widget.compact ? 40 : 52,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.fromBorderSide(border),
-            ),
-            child: Center(
-              child: DefaultTextStyle(
-                style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                      color: fg,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
-                    ),
-                child: IconTheme(
-                  data: IconThemeData(color: fg, size: 20),
-                  child: widget.isLoading
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.2,
-                            valueColor: AlwaysStoppedAnimation(fg),
-                          ),
-                        )
-                      : widget.child,
+            scale: scale,
+            child: AnimatedContainer(
+              duration: reduceMotion ? Duration.zero : AppMotion.quick,
+              curve: AppMotion.ease,
+              height: widget.compact ? 40 : 52,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.fromBorderSide(border),
+              ),
+              child: Center(
+                child: DefaultTextStyle(
+                  style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                        color: fg,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                  child: IconTheme(
+                    data: IconThemeData(color: fg, size: 20),
+                    child: widget.isLoading
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              valueColor: AlwaysStoppedAnimation(fg),
+                            ),
+                          )
+                        : widget.child,
+                  ),
                 ),
               ),
             ),

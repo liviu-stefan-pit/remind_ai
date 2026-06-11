@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.remindai" "\0"
-            VALUE "FileDescription", "remind_ai" "\0"
+            VALUE "CompanyName", "Liviu-Stefan Petroaia" "\0"
+            VALUE "FileDescription", "REMind-Ai" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "remind_ai" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.remindai. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Liviu-Stefan Petroaia. All rights reserved." "\0"
             VALUE "OriginalFilename", "remind_ai.exe" "\0"
-            VALUE "ProductName", "remind_ai" "\0"
+            VALUE "ProductName", "REMind-Ai" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

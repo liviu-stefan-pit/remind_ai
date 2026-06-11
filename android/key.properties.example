@@ -1,0 +1,15 @@
+# Copy to remind_ai/android/key.properties and fill in your real values.
+# DO NOT commit the real file. It is matched by .gitignore.
+#
+# Generate the keystore (once, outside the repo or in remind_ai/android/, which
+# is gitignored for *.jks):
+#
+#   keytool -genkey -v -keystore key.jks -keyalg RSA -keysize 2048 ^
+#           -validity 10000 -alias remindai
+#
+# storeFile is resolved relative to remind_ai/android/.
+
+storePassword=changeme
+keyPassword=changeme
+keyAlias=remindai
+storeFile=key.jks

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:remind_ai/constants/app_strings.dart';
 import 'package:remind_ai/design/background/quiet_sky.dart';
+import 'package:remind_ai/design/glass/glass_button.dart';
 import 'package:remind_ai/design/glass/hover_lift.dart';
 import 'package:remind_ai/design/motion/enter_effects.dart';
 import 'package:remind_ai/design/rive/rive_widgets.dart';
@@ -16,12 +17,16 @@ import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart'
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
 
-Color _dreamStyleColor(DreamStyle style, ThemeData theme) => switch (style) {
-      DreamStyle.standard => theme.colorScheme.primary,
-      DreamStyle.psychological => theme.colorScheme.secondary,
-      DreamStyle.mythic => theme.colorScheme.tertiary,
-      DreamStyle.creative => theme.colorScheme.error,
-    };
+Color _dreamStyleColor(DreamStyle style, BuildContext context) {
+  final cs = Theme.of(context).colorScheme;
+  return switch (style) {
+    DreamStyle.standard => cs.primary,
+    DreamStyle.psychological => cs.secondary,
+    DreamStyle.mythic => cs.tertiary,
+    // Avoid the error color (reads as "delete"); use the soft accent instead.
+    DreamStyle.creative => context.auroraTheme.accentSoft,
+  };
+}
 
 String _dreamStyleLabel(DreamStyle style) => switch (style) {
       DreamStyle.standard => 'Standard',
@@ -61,6 +66,17 @@ class HistoryScreen extends ConsumerWidget {
                             color: aurora.textDim,
                           ),
                         ).animateFade(key: const ValueKey('history-empty')),
+                        const Gap(AppSpacing.xl),
+                        Padding(
+                          padding: context.contentPadding,
+                          child: GlassButton(
+                            onPressed: () =>
+                                context.push(AppRoute.dreamInput.route),
+                            child: const Text(AppStrings.historyEmptyCta),
+                          ),
+                        ).animateFade(
+                          key: const ValueKey('history-empty-cta'),
+                        ),
                       ],
                     )
                   : ListView.separated(
@@ -137,7 +153,7 @@ class _DreamHistoryTile extends StatelessWidget {
     final cs = theme.colorScheme;
     final aurora = context.auroraTheme;
     final dateStr = DateFormat('MMM d, yyyy').format(entry.createdAt);
-    final styleColor = _dreamStyleColor(entry.style, theme);
+    final styleColor = _dreamStyleColor(entry.style, context);
 
     return Dismissible(
       key: ValueKey(entry.id),

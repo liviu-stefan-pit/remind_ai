@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -93,13 +94,31 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
                         style: context.textTheme.headlineSmall,
                       ).animateRise(key: const ValueKey('input-label')),
                       const Gap(AppSpacing.md),
-                      GlassField(
+                      CallbackShortcuts(
+                        bindings: {
+                          const SingleActivator(
+                            LogicalKeyboardKey.enter,
+                            control: true,
+                          ): _submit,
+                          const SingleActivator(
+                            LogicalKeyboardKey.enter,
+                            meta: true,
+                          ): _submit,
+                        },
+                        child: GlassField(
                         focused: _focusNode.hasFocus,
                         child: TextFormField(
                           controller: _controller,
                           focusNode: _focusNode,
+                          autofocus: _autofocusInput(context),
                           minLines: 6,
                           maxLines: 14,
+                          maxLength: AppStrings.dreamMaxChars,
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(
+                              AppStrings.dreamMaxChars,
+                            ),
+                          ],
                           textInputAction: TextInputAction.newline,
                           style: AppTypography.serifBody(
                             context.colorScheme.onSurface,
@@ -122,8 +141,12 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
                             if (trimmed.length < 20) {
                               return AppStrings.minCharsError;
                             }
+                            if (trimmed.length > AppStrings.dreamMaxChars) {
+                              return AppStrings.maxCharsError;
+                            }
                             return null;
                           },
+                        ),
                         ),
                       ).animateRise(
                         key: const ValueKey('input-field'),
@@ -197,6 +220,21 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
     );
   }
 
+  /// Autofocus the dream field only on desktop, where a popped-up software
+  /// keyboard isn't a concern and keyboard-first entry is expected.
+  bool _autofocusInput(BuildContext context) {
+    switch (Theme.of(context).platform) {
+      case TargetPlatform.windows:
+      case TargetPlatform.macOS:
+      case TargetPlatform.linux:
+        return true;
+      case TargetPlatform.android:
+      case TargetPlatform.iOS:
+      case TargetPlatform.fuchsia:
+        return false;
+    }
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     ref.read(submitDreamLogicProvider.notifier).submit(
@@ -245,7 +283,12 @@ class _StyleTile extends StatelessWidget {
         ? aurora.textDim
         : (isSelected ? aurora.accent : cs.onSurface);
 
-    return MouseRegion(
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      enabled: !isLocked,
+      label: labelFor(style),
+      child: MouseRegion(
       cursor: isLocked
           ? SystemMouseCursors.forbidden
           : SystemMouseCursors.click,
@@ -284,6 +327,7 @@ class _StyleTile extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -11,11 +11,59 @@ Future<void> main() async {
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initHive();
 
   if (kReleaseMode) {
     debugPrint = (String? message, {int? wrapWidth}) {};
   }
 
+  try {
+    await initHive();
+  } catch (error, stackTrace) {
+    debugPrint('Fatal: local storage failed to initialize: $error');
+    if (kDebugMode) debugPrintStack(stackTrace: stackTrace);
+    runApp(const _StorageInitErrorApp());
+    return;
+  }
+
   runApp(const ProviderScope(child: RemindAiApp()));
+}
+
+/// Shown only if local storage cannot be initialized even after the
+/// self-healing reset in [initHive]. Keeps the app from white-screening.
+class _StorageInitErrorApp extends StatelessWidget {
+  const _StorageInitErrorApp();
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        backgroundColor: const Color(0xFF07061A),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.cloud_off_rounded, color: Colors.white70, size: 48),
+                SizedBox(height: 16),
+                Text(
+                  "REMind-Ai couldn't open its local storage.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Please restart the app. If this keeps happening, '
+                  'reinstalling will reset local data.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

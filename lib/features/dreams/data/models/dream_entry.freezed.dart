@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DreamEntry {
 
- String get id; String get dreamText; DreamStyle get style; DateTime get createdAt; String? get interpretationText; bool get isSynced;
+ String get id; String get dreamText; DreamStyle get style; DateTime get createdAt; String? get interpretationText;// reserved: future cloud sync
+ bool get isSynced;
 /// Create a copy of DreamEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -222,6 +223,7 @@ class _DreamEntry implements DreamEntry {
 @override final  DreamStyle style;
 @override final  DateTime createdAt;
 @override final  String? interpretationText;
+// reserved: future cloud sync
 @override@JsonKey() final  bool isSynced;
 
 /// Create a copy of DreamEntry

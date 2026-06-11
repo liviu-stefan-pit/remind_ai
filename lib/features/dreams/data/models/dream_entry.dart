@@ -12,6 +12,7 @@ abstract class DreamEntry with _$DreamEntry {
     required DreamStyle style,
     required DateTime createdAt,
     String? interpretationText,
+    // reserved: future cloud sync
     @Default(false) bool isSynced,
   }) = _DreamEntry;
 

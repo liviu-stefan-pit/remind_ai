@@ -27,9 +27,9 @@ class ThemeLogic extends _$ThemeLogic {
     return ThemeUiModel(themeMode: themeMode);
   }
 
-  void setThemeMode(ThemeMode mode) {
-    Hive.box<String>('prefs').put('themeMode', mode.toString());
+  Future<void> setThemeMode(ThemeMode mode) async {
     state = state.copyWith(themeMode: mode);
+    await Hive.box<String>('prefs').put('themeMode', mode.toString());
   }
 
   void toggleTheme() {

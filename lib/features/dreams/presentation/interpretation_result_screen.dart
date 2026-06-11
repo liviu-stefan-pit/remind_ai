@@ -77,7 +77,7 @@ class InterpretationResultScreen extends StatelessWidget {
                       enableHoverGlow: false,
                       child: SizedBox(
                         width: double.infinity,
-                        child: Text(
+                        child: SelectableText(
                           entry.dreamText,
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: aurora.textDim,
@@ -124,7 +124,7 @@ class InterpretationResultScreen extends StatelessWidget {
                               );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Copied to clipboard'),
+                                  content: Text(AppStrings.copiedToClipboard),
                                 ),
                               );
                             },
@@ -153,6 +153,16 @@ class InterpretationResultScreen extends StatelessWidget {
                       key: const ValueKey('result-actions'),
                       delay: const Duration(milliseconds: 200),
                     ),
+                    const Gap(AppSpacing.lg),
+                    Text(
+                      AppStrings.aiDisclaimer,
+                      textAlign: TextAlign.center,
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: aurora.textDim,
+                        height: 1.4,
+                      ),
+                    ),
+                    const Gap(AppSpacing.lg),
                   ],
                 ),
               ),

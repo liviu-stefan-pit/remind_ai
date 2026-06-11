@@ -1,12 +1,12 @@
 {
     "name": "REMind-Ai",
     "short_name": "REMind-Ai",
-    "start_url": ".",
+    "start_url": "/",
     "display": "standalone",
-    "background_color": "#07061A",
-    "theme_color": "#7C5CDD",
+    "background_color": "#0A0E1A",
+    "theme_color": "#0A0E1A",
     "description": "AI-powered dream interpretation with a living aurora sky.",
-    "orientation": "portrait-primary",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

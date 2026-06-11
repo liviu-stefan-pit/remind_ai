@@ -13,7 +13,7 @@ A cross-platform dream interpretation app built with Flutter.
 - **State management**: Riverpod v3 (code-gen)
 - **Routing**: GoRouter
 - **Local storage**: Hive CE
-- **Theme**: FlexColorScheme + Google Fonts (Inter)
+- **Theme**: Custom Material 3 `AppTheme` (Midnight Dream / Parchment Dream palettes) + Google Fonts (Inter, Fraunces)
 - **Code generation**: Freezed + json_serializable + riverpod_generator
 
 ## Getting Started

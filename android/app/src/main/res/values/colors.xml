@@ -2,4 +2,5 @@
 <resources>
     <color name="aurora_deep">#FF07061A</color>
     <color name="aurora_glow">#FF7C5CDD</color>
+	<color name="ic_launcher_background">#0A0E1A</color>
 </resources>

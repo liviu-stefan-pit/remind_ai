@@ -39,8 +39,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _OnboardPage(
       icon: Icons.lock_outline_rounded,
       kicker: 'PRIVATE',
-      title: 'Your journal lives on this device',
-      body: 'Dreams are stored locally. Nothing leaves unless you share it.',
+      title: AppStrings.onboardingPrivacyTitle,
+      body: AppStrings.onboardingPrivacyBody,
     ),
   ];
 
@@ -54,6 +54,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final aurora = context.auroraTheme;
     final isLast = _page == _pages.length - 1;
+    final ageConfirmed = ref.watch(
+      settingsLogicProvider.select((s) => s.ageConfirmed),
+    );
+    final canFinish = !isLast || ageConfirmed;
 
     return Scaffold(
       body: QuietSky(
@@ -132,6 +136,55 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                     ),
                     const Gap(AppSpacing.xl),
+                    if (isLast)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: () => ref
+                                  .read(settingsLogicProvider.notifier)
+                                  .setAgeConfirmed(!ageConfirmed),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.xs,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Checkbox(
+                                      value: ageConfirmed,
+                                      onChanged: (v) => ref
+                                          .read(settingsLogicProvider.notifier)
+                                          .setAgeConfirmed(v ?? false),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        AppStrings.ageGateLabel,
+                                        style: context.textTheme.bodyMedium,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            if (!ageConfirmed)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: AppSpacing.xs,
+                                  top: AppSpacing.xxs,
+                                ),
+                                child: Text(
+                                  AppStrings.ageGateRequired,
+                                  style: context.textTheme.bodySmall?.copyWith(
+                                    color: aurora.textDim,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     Row(
                       children: [
                         if (!isLast)
@@ -139,10 +192,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             child: GlassButton(
                               outlined: true,
                               onPressed: () {
-                                ref
-                                    .read(settingsLogicProvider.notifier)
-                                    .markOnboardingSeen();
-                                context.go(AppRoute.home.route);
+                                _pageController.animateToPage(
+                                  _pages.length - 1,
+                                  duration: const Duration(milliseconds: 280),
+                                  curve: Curves.easeOutCubic,
+                                );
                               },
                               child: const Text('Skip'),
                             ),
@@ -150,19 +204,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         if (!isLast) const Gap(AppSpacing.sm),
                         Expanded(
                           child: GlassButton(
-                            onPressed: () {
-                              if (!isLast) {
-                                _pageController.nextPage(
-                                  duration: const Duration(milliseconds: 280),
-                                  curve: Curves.easeOutCubic,
-                                );
-                              } else {
-                                ref
-                                    .read(settingsLogicProvider.notifier)
-                                    .markOnboardingSeen();
-                                context.go(AppRoute.home.route);
-                              }
-                            },
+                            onPressed: canFinish
+                                ? () {
+                                    if (!isLast) {
+                                      _pageController.nextPage(
+                                        duration:
+                                            const Duration(milliseconds: 280),
+                                        curve: Curves.easeOutCubic,
+                                      );
+                                    } else {
+                                      ref
+                                          .read(settingsLogicProvider.notifier)
+                                          .markOnboardingSeen();
+                                      context.go(AppRoute.home.route);
+                                    }
+                                  }
+                                : null,
                             child: Text(
                               isLast ? AppStrings.onboardingBegin : 'Continue',
                             ),
