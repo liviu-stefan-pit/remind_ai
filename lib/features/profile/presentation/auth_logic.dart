@@ -40,8 +40,13 @@ class AuthLogic extends _$AuthLogic {
       (user == null || user.isAnonymous) ? null : user;
 
   void _handleUser(User? user) {
-    state = AsyncData(_visible(user));
-    _syncPurchases(user);
+    // Defer so authStateChanges() can emit during [build] without mutating
+    // accessTierLogicProvider (Riverpod forbids cross-provider writes in build).
+    Future.microtask(() {
+      if (!ref.mounted) return;
+      state = AsyncData(_visible(user));
+      _syncPurchases(user);
+    });
   }
 
   void _syncPurchases(User? user) {
