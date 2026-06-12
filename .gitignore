@@ -51,6 +51,7 @@ app.*.map.json
 PUBLISH_NEXT_STEPS.md
 SECURITY.md
 STORE_METADATA.md
+HANDOFF.md
 
 # Firebase plugin skill caches (local tooling, not app code)
 .agents/

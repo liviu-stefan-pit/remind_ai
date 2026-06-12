@@ -14,6 +14,7 @@ import 'package:remind_ai/design/tokens/spacing.dart';
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
 import 'package:remind_ai/features/dreams/domain/dream_style.dart';
 import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart';
+import 'package:remind_ai/features/profile/presentation/auth_logic.dart';
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
 
@@ -96,9 +97,6 @@ class HistoryScreen extends ConsumerWidget {
                             AppRoute.result.route,
                             extra: entry,
                           ),
-                          onDelete: () => ref
-                              .read(dreamHistoryLogicProvider.notifier)
-                              .delete(entry.id),
                         );
                       },
                     ),
@@ -110,25 +108,28 @@ class HistoryScreen extends ConsumerWidget {
   }
 }
 
-class _DreamHistoryTile extends StatelessWidget {
+class _DreamHistoryTile extends ConsumerWidget {
   const _DreamHistoryTile({
     required this.entry,
     required this.index,
     required this.onTap,
-    required this.onDelete,
   });
 
   final DreamEntry entry;
   final int index;
   final VoidCallback onTap;
-  final VoidCallback onDelete;
 
-  Future<void> _confirmDelete(BuildContext context) async {
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final signedIn = ref.read(authLogicProvider).value != null;
+    final message = signedIn
+        ? AppStrings.deleteConfirmMessageSignedIn
+        : '${AppStrings.deleteConfirmMessage}\n\n'
+            '${AppStrings.deleteConfirmCloudWarning}';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text(AppStrings.deleteConfirmTitle),
-        content: const Text(AppStrings.deleteConfirmMessage),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -144,11 +145,17 @@ class _DreamHistoryTile extends StatelessWidget {
         ],
       ),
     );
-    if (confirmed == true) onDelete();
+    if (confirmed == true) {
+      await ref.read(dreamHistoryLogicProvider.notifier).delete(entry.id);
+    }
+  }
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    await ref.read(dreamHistoryLogicProvider.notifier).delete(entry.id);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final aurora = context.auroraTheme;
@@ -158,7 +165,7 @@ class _DreamHistoryTile extends StatelessWidget {
     return Dismissible(
       key: ValueKey(entry.id),
       direction: DismissDirection.endToStart,
-      onDismissed: (_) => onDelete(),
+      onDismissed: (_) => _delete(context, ref),
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: AppSpacing.lg),
@@ -216,7 +223,7 @@ class _DreamHistoryTile extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 20),
                 color: aurora.textDim,
-                onPressed: () => _confirmDelete(context),
+                onPressed: () => _confirmDelete(context, ref),
               ),
             ],
           ),

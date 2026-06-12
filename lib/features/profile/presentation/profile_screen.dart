@@ -204,7 +204,7 @@ class _SignedOut extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _ProPitch(),
+        _ProPitch(comingSoon: !PurchasesConfig.proPurchasable),
         const Gap(AppSpacing.lg),
         if (PurchasesConfig.proPurchasable)
           GlassButton(
@@ -292,7 +292,7 @@ class _SignedIn extends StatelessWidget {
         if (isPro)
           _ProStatusCard(user: user, onSignOut: onSignOut)
         else ...[
-          const _ProPitch(),
+          _ProPitch(comingSoon: !PurchasesConfig.proPurchasable),
           const Gap(AppSpacing.lg),
           if (PurchasesConfig.proPurchasable) ...[
             if (waitingForWindows) ...[
@@ -303,6 +303,14 @@ class _SignedIn extends StatelessWidget {
               onPressed: purchasing ? null : onUpgrade,
               isLoading: purchasing,
               child: const Text(AppStrings.upgradeCta),
+            ),
+            const Gap(AppSpacing.sm),
+            Text(
+              AppStrings.subscriptionFinePrint,
+              style: context.textTheme.bodySmall?.copyWith(
+                color: aurora.textDim,
+                height: 1.4,
+              ),
             ),
           ] else ...[
             const _ComingSoonNotice(),
@@ -474,7 +482,9 @@ class _TierBadge extends StatelessWidget {
 }
 
 class _ProPitch extends StatelessWidget {
-  const _ProPitch();
+  const _ProPitch({required this.comingSoon});
+
+  final bool comingSoon;
 
   static const _features = <(IconData, String, String)>[
     (
@@ -483,19 +493,19 @@ class _ProPitch extends StatelessWidget {
       'Psychological, Mythic, and Creative personas.',
     ),
     (
-      Icons.all_inclusive_rounded,
-      'Unlimited interpretations',
-      'No daily limit on dream readings.',
+      Icons.auto_awesome_outlined,
+      '20 interpretations per day',
+      'A generous daily allowance for dream readings.',
     ),
     (
       Icons.cloud_done_outlined,
       'Cloud backup',
-      'Your journal syncs securely across devices.',
+      'Your journal is backed up to the cloud while you are signed in.',
     ),
     (
       Icons.insights_rounded,
       'Insights dashboard',
-      'Visualize your recurring themes and styles.',
+      'See which words and styles show up most in your journal.',
     ),
   ];
 
@@ -510,7 +520,9 @@ class _ProPitch extends StatelessWidget {
           Text(AppStrings.proPitchTitle, style: context.textTheme.titleLarge),
           const Gap(AppSpacing.xs),
           Text(
-            AppStrings.proPitchPrice,
+            comingSoon
+                ? AppStrings.proPitchPlannedPrice
+                : AppStrings.proPitchPrice,
             style: context.textTheme.titleMedium?.copyWith(color: aurora.accent),
           ),
           const Gap(AppSpacing.md),

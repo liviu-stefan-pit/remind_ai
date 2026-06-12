@@ -133,7 +133,7 @@ class InterpretationResultScreen extends StatelessWidget {
                               children: [
                                 Icon(Icons.copy_outlined, size: 16),
                                 Gap(6),
-                                Text(AppStrings.share),
+                                Text(AppStrings.copy),
                               ],
                             ),
                           ),

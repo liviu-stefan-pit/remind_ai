@@ -18,9 +18,12 @@ class DreamRemoteDatasource {
 
   static const _batchLimit = 500;
 
+  CollectionReference<Map<String, dynamic>> _dreams(String uid) =>
+      _firestore.collection('users').doc(uid).collection('dreams');
+
   Future<void> uploadBatch(String uid, List<DreamEntry> entries) async {
     if (entries.isEmpty) return;
-    final dreams = _firestore.collection('users').doc(uid).collection('dreams');
+    final dreams = _dreams(uid);
 
     for (var i = 0; i < entries.length; i += _batchLimit) {
       final batch = _firestore.batch();
@@ -29,6 +32,23 @@ class DreamRemoteDatasource {
           ...entry.copyWith(isSynced: true).toJson(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
+      }
+      await batch.commit();
+    }
+  }
+
+  Future<void> deleteEntry(String uid, String entryId) async {
+    await _dreams(uid).doc(entryId).delete();
+  }
+
+  Future<void> deleteAll(String uid) async {
+    final snap = await _dreams(uid).get();
+    if (snap.docs.isEmpty) return;
+
+    for (var i = 0; i < snap.docs.length; i += _batchLimit) {
+      final batch = _firestore.batch();
+      for (final doc in snap.docs.skip(i).take(_batchLimit)) {
+        batch.delete(doc.reference);
       }
       await batch.commit();
     }

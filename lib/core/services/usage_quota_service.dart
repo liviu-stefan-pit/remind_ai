@@ -14,7 +14,7 @@ const _kFreeDailyLimit = 3;
 /// Daily interpretation cap for Pro users. Generous for real use, but bounded
 /// so a compromised/scripted Pro session can't run up unbounded cost against
 /// the more expensive Pro model.
-const _kProDailyLimit = 30;
+const _kProDailyLimit = 20;
 
 /// Minimum spacing between submissions. Blocks rapid-fire scripted taps.
 const _kMinSubmitInterval = Duration(seconds: 15);

@@ -13,6 +13,7 @@ import 'package:remind_ai/design/theme/theme_extension.dart';
 import 'package:remind_ai/design/tokens/spacing.dart';
 import 'package:remind_ai/design/tokens/typography.dart';
 import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart';
+import 'package:remind_ai/features/profile/presentation/auth_logic.dart';
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -284,11 +285,16 @@ class SettingsScreen extends ConsumerWidget {
       };
 
   Future<void> _confirmClearHistory(BuildContext context, WidgetRef ref) async {
+    final signedIn = ref.read(authLogicProvider).value != null;
+    final message = signedIn
+        ? AppStrings.clearHistoryConfirmMessageSignedIn
+        : '${AppStrings.clearHistoryConfirmMessage}\n\n'
+            '${AppStrings.deleteConfirmCloudWarning}';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text(AppStrings.clearHistoryConfirmTitle),
-        content: const Text(AppStrings.clearHistoryConfirmMessage),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),

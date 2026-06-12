@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce/hive.dart';
+import 'package:remind_ai/core/services/cloud_deletion.dart';
 import 'package:remind_ai/design/theme/theme_extension.dart';
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
 import 'package:remind_ai/hive/hive.dart';
@@ -58,6 +59,7 @@ class SettingsLogic extends _$SettingsLogic {
   }
 
   Future<void> clearHistory() async {
+    await deleteCloudDreams(ref);
     await Hive.box<DreamEntry>(kDreamsBox).clear();
   }
 }

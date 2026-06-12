@@ -55,7 +55,7 @@ class _InsightsBody extends ConsumerWidget {
         padding: context.contentPadding,
         child: Center(
           child: Text(
-            'Log at least 3 dreams to reveal your recurring themes.',
+            'Log at least 3 dreams to see which words show up most often.',
             textAlign: TextAlign.center,
             style: context.textTheme.bodyLarge?.copyWith(color: aurora.textDim),
           ),
@@ -277,8 +277,8 @@ class _LockedTeaser extends StatelessWidget {
               ),
               const Gap(AppSpacing.sm),
               Text(
-                'Visualize your most recurring dream themes and how you '
-                'interpret them. Upgrade to unlock your personal dashboard.',
+                'See which words and styles show up most in your journal and how '
+                'you interpret them. Upgrade to unlock your personal dashboard.',
                 style:
                     context.textTheme.bodyMedium?.copyWith(color: aurora.textDim),
                 textAlign: TextAlign.center,

@@ -17,11 +17,11 @@ EU consumer-protection law or the consumer law of your country of residence.
 
 ## 1. Acceptance and eligibility
 
-By installing or using REMind-Ai on Android, Windows, or the Web, you confirm
-that you are **18 years of age or older**. This age requirement is mandated by
-Google's Gemini API Terms of Service, which power the interpretation feature.
-The app shows an explicit age confirmation on first launch. If you are under
-18, you may not use the app.
+By installing or using REMind-Ai on the Web or other platforms where it is
+offered, you confirm that you are **18 years of age or older**. This age
+requirement is mandated by Google's Gemini API Terms of Service, which power
+the interpretation feature. The app shows an explicit age confirmation on
+first launch. If you are under 18, you may not use the app.
 
 ## 2. What the service does
 
@@ -35,10 +35,11 @@ Interpretations are produced by Google's Gemini AI. Usage is rate-limited to
 keep the service available and to prevent abuse:
 
 - **Free:** up to 3 interpretations per day.
-- **Pro:** up to 30 interpretations per day.
+- **Pro:** up to 20 interpretations per day.
 
 These limits, the available styles, and the AI models used may change over
-time as the app evolves.
+time as the app evolves. We may adjust limits without prior notice where
+permitted by law, but will not advertise capabilities the app does not provide.
 
 ## 3. AI content disclaimer
 
@@ -49,8 +50,8 @@ professional advice. Do not rely on the app for decisions about your health
 or wellbeing. If you are in distress, contact a qualified professional or your
 local emergency services.
 
-AI output can be inaccurate, inconsistent, or unexpected. You are responsible
-for how you interpret and use it.
+AI output can be inaccurate, inconsistent, offensive, or unexpected. You are
+responsible for how you interpret and use it.
 
 ## 4. Acceptable use
 
@@ -95,11 +96,15 @@ If you do not subscribe, the app remains fully usable on the free tier.
 
 ## 6. Your content
 
-Your dream text and saved interpretations are stored locally on your device
-(and, only if you opt in to Pro cloud backup, in your private cloud space).
+Your dream text and saved interpretations are stored locally on your device.
+If you are a signed-in Pro user, they may also be uploaded one-way to your
+private cloud backup area in Firestore. Cloud backup is best-effort and is
+not guaranteed to preserve your data indefinitely or across all devices.
+
 You retain any rights you have in the text you write. You grant us and Google
 the limited right to process your submitted text solely to generate and return
-an interpretation, as described in the [Privacy Policy](PRIVACY_POLICY.md).
+an interpretation and to provide optional backup, as described in the
+[Privacy Policy](PRIVACY_POLICY.md).
 
 ## 7. Third-party services
 
@@ -130,20 +135,45 @@ arising from your use of, or reliance on, the app or its AI-generated content.
 Nothing in these Terms limits liability that cannot be limited under
 applicable law.
 
-## 10. Changes to these Terms
+## 10. Termination and suspension
+
+We may suspend or terminate your access to the app, cloud backup, or Pro
+features at any time if you violate these Terms, abuse rate limits, or create
+risk to the service or third-party providers. You may stop using the app at
+any time and delete your local data through Settings.
+
+## 11. Indemnity
+
+To the extent permitted by law, you agree to indemnify and hold harmless the
+developer from claims, damages, or expenses arising from your misuse of the
+app, your submitted content, or your violation of these Terms or applicable
+law. This does not apply where prohibited by mandatory consumer-protection law.
+
+## 12. Assignment
+
+We may assign or transfer these Terms in connection with a sale or transfer of
+the project. You may not assign your rights without our consent.
+
+## 13. Severability and entire agreement
+
+If any provision of these Terms is found unenforceable, the remaining provisions
+remain in effect. These Terms, together with the Privacy Policy, constitute the
+entire agreement between you and the developer regarding the app.
+
+## 14. Changes to these Terms
 
 We may update these Terms from time to time. The "Last updated" date reflects
 the most recent change. Significant changes will be noted in the app's release
 notes. Continued use after changes take effect means you accept the updated
-Terms.
+Terms where permitted by law.
 
-## 11. Governing law
+## 15. Governing law
 
 These Terms are governed by the laws of **Romania**, without regard to
 conflict-of-law rules, except where mandatory consumer-protection laws of your
 country of residence apply.
 
-## 12. Contact
+## 16. Contact
 
 Liviu-Stefan Petroaia — independent developer (no company affiliation)
 Email: **liviustefan.petroaia@gmail.com**

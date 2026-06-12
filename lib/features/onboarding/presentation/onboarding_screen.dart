@@ -11,6 +11,7 @@ import 'package:remind_ai/design/tokens/spacing.dart';
 import 'package:remind_ai/design/tokens/typography.dart';
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -33,12 +34,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _OnboardPage(
       icon: Icons.auto_awesome_outlined,
       kicker: 'INTERPRET',
-      title: 'Four ways to read the meaning',
-      body: 'Standard, Psychological, Mythic, Creative. Pick the lens you need.',
+      title: 'Four lenses to explore your dream',
+      body:
+          'Standard, Psychological, Mythic, Creative — pick a style for fun '
+          'and reflection, not professional advice.',
     ),
     _OnboardPage(
       icon: Icons.lock_outline_rounded,
-      kicker: 'PRIVATE',
+      kicker: 'YOUR DATA',
       title: AppStrings.onboardingPrivacyTitle,
       body: AppStrings.onboardingPrivacyBody,
     ),
@@ -182,6 +185,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                   ),
                                 ),
                               ),
+                            const Gap(AppSpacing.sm),
+                            _OnboardingLegalLinks(aurora: aurora),
                           ],
                         ),
                       ),
@@ -251,4 +256,46 @@ class _OnboardPage {
   final String kicker;
   final String title;
   final String body;
+}
+
+class _OnboardingLegalLinks extends StatelessWidget {
+  const _OnboardingLegalLinks({required this.aurora});
+
+  final AuroraTheme aurora;
+
+  Future<void> _open(String url) async {
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final baseStyle = context.textTheme.bodySmall?.copyWith(
+      color: aurora.textDim,
+      height: 1.45,
+    );
+    final linkStyle = baseStyle?.copyWith(color: aurora.accent);
+
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text('By continuing, you agree to our ', style: baseStyle),
+        InkWell(
+          onTap: () => _open(AppUrls.termsOfService),
+          child: Text(
+            AppStrings.termsOfService,
+            style: linkStyle?.copyWith(decoration: TextDecoration.underline),
+          ),
+        ),
+        Text(' and ', style: baseStyle),
+        InkWell(
+          onTap: () => _open(AppUrls.privacyPolicy),
+          child: Text(
+            AppStrings.privacyPolicy,
+            style: linkStyle?.copyWith(decoration: TextDecoration.underline),
+          ),
+        ),
+        Text('.', style: baseStyle),
+      ],
+    );
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:remind_ai/core/services/cloud_deletion.dart';
 import 'package:remind_ai/features/dreams/data/datasources/dream_local_datasource.dart';
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -13,6 +14,7 @@ class DreamHistoryLogic extends _$DreamHistoryLogic {
   }
 
   Future<void> delete(String id) async {
+    await deleteCloudDreams(ref, entryId: id);
     await ref.read(dreamLocalDatasourceProvider).delete(id);
     state = state.where((e) => e.id != id).toList();
   }

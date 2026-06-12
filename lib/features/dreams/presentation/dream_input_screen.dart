@@ -7,6 +7,7 @@ import 'package:remind_ai/config/access_tier/access_tier_logic.dart';
 import 'package:remind_ai/config/purchases/purchases_config.dart';
 import 'package:remind_ai/constants/app_strings.dart';
 import 'package:remind_ai/core/errors/app_exception.dart';
+import 'package:remind_ai/core/services/usage_quota_service.dart';
 import 'package:remind_ai/design/background/quiet_sky.dart';
 import 'package:remind_ai/design/glass/glass_button.dart';
 import 'package:remind_ai/design/glass/glass_field.dart';
@@ -49,6 +50,10 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
   @override
   Widget build(BuildContext context) {
     final isPro = ref.watch(accessTierLogicProvider).tier.isPro;
+    final tier = ref.watch(accessTierLogicProvider).tier;
+    final quota = ref.watch(usageQuotaServiceProvider);
+    final dailyLimit = UsageQuotaService.dailyLimitFor(tier);
+    final remaining = quota.remainingToday(tier);
     final submitState = ref.watch(submitDreamLogicProvider);
     final isLoading = submitState is AsyncLoading;
     final aurora = context.auroraTheme;
@@ -64,7 +69,9 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
         error: (error, _) {
           final message = switch (error) {
             DailyLimitException() => AppStrings.dailyLimitReached,
-            ProRequiredException() => AppStrings.proRequired,
+            ProRequiredException() => PurchasesConfig.proPurchasable
+                ? AppStrings.proRequired
+                : AppStrings.proRequiredComingSoon,
             RateLimitException() => AppStrings.rateLimited,
             _ => AppStrings.unexpectedError,
           };
@@ -164,6 +171,13 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
                       const Gap(AppSpacing.sm),
                       _buildStyleGrid(isPro: isPro),
                       const Gap(AppSpacing.xl),
+                      Text(
+                        AppStrings.readingsRemainingToday(remaining, dailyLimit),
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: aurora.textDim,
+                        ),
+                      ),
+                      const Gap(AppSpacing.sm),
                       SizedBox(
                         width: double.infinity,
                         child: GlassButton(
@@ -174,6 +188,15 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
                       ).animateRise(
                         key: const ValueKey('input-cta'),
                         delay: const Duration(milliseconds: 160),
+                      ),
+                      const Gap(AppSpacing.sm),
+                      Text(
+                        AppStrings.inputDisclaimer,
+                        textAlign: TextAlign.center,
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: aurora.textDim,
+                          height: 1.4,
+                        ),
                       ),
                       const Gap(AppSpacing.lg),
                     ],
