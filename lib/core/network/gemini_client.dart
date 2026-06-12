@@ -5,8 +5,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'gemini_client.g.dart';
 
-const _kEndpoint =
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+const _kEndpointBase =
+    'https://generativelanguage.googleapis.com/v1beta/models';
+
+/// Fast, low-cost model used for the free Standard style.
+const kStandardModel = 'gemini-2.5-flash-lite';
+
+/// Higher-quality model powering the Pro interpretation styles.
+const kProModel = 'gemini-3.5-flash';
 
 /// Appended to every system instruction so user dream text (wrapped in
 /// <dream>…</dream> below) is always treated as data to interpret, never as
@@ -54,10 +60,12 @@ class GeminiClient {
   Future<String> generate({
     required String prompt,
     required String systemInstruction,
+    String model = kStandardModel,
+    int maxOutputTokens = 512,
   }) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
-        _kEndpoint,
+        '$_kEndpointBase/$model:generateContent',
         data: {
           'systemInstruction': {
             'parts': [
@@ -73,7 +81,10 @@ class GeminiClient {
             },
           ],
           'safetySettings': _kSafetySettings,
-          'generationConfig': {'temperature': 0.7, 'maxOutputTokens': 512},
+          'generationConfig': {
+            'temperature': 0.7,
+            'maxOutputTokens': maxOutputTokens,
+          },
         },
       );
 

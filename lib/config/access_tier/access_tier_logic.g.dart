@@ -8,12 +8,30 @@ part of 'access_tier_logic.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Single source of truth for the user's tier, consumed by every UI gate.
+///
+/// The tier is only ever written by the entitlement services (RevenueCat SDK
+/// listener on Android/Web, REST poll on Windows) via [applyEntitlement]; the
+/// UI never sets it directly. On startup it hydrates from [EntitlementCache] so
+/// Pro survives offline launches until the next remote validation.
 
 @ProviderFor(AccessTierLogic)
 final accessTierLogicProvider = AccessTierLogicProvider._();
 
+/// Single source of truth for the user's tier, consumed by every UI gate.
+///
+/// The tier is only ever written by the entitlement services (RevenueCat SDK
+/// listener on Android/Web, REST poll on Windows) via [applyEntitlement]; the
+/// UI never sets it directly. On startup it hydrates from [EntitlementCache] so
+/// Pro survives offline launches until the next remote validation.
 final class AccessTierLogicProvider
     extends $NotifierProvider<AccessTierLogic, AccessTierState> {
+  /// Single source of truth for the user's tier, consumed by every UI gate.
+  ///
+  /// The tier is only ever written by the entitlement services (RevenueCat SDK
+  /// listener on Android/Web, REST poll on Windows) via [applyEntitlement]; the
+  /// UI never sets it directly. On startup it hydrates from [EntitlementCache] so
+  /// Pro survives offline launches until the next remote validation.
   AccessTierLogicProvider._()
     : super(
         from: null,
@@ -41,7 +59,14 @@ final class AccessTierLogicProvider
   }
 }
 
-String _$accessTierLogicHash() => r'd468b9498b39c6a10b601efff427ae936eeddb27';
+String _$accessTierLogicHash() => r'0d1070b82055ba04a533f50aea7e2a08bb169e49';
+
+/// Single source of truth for the user's tier, consumed by every UI gate.
+///
+/// The tier is only ever written by the entitlement services (RevenueCat SDK
+/// listener on Android/Web, REST poll on Windows) via [applyEntitlement]; the
+/// UI never sets it directly. On startup it hydrates from [EntitlementCache] so
+/// Pro survives offline launches until the next remote validation.
 
 abstract class _$AccessTierLogic extends $Notifier<AccessTierState> {
   AccessTierState build();

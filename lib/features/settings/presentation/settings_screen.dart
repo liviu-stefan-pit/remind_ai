@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:remind_ai/config/access_tier/access_tier_logic.dart';
 import 'package:remind_ai/config/settings/settings_logic.dart';
 import 'package:remind_ai/config/theme/theme_logic.dart';
@@ -12,6 +13,7 @@ import 'package:remind_ai/design/theme/theme_extension.dart';
 import 'package:remind_ai/design/tokens/spacing.dart';
 import 'package:remind_ai/design/tokens/typography.dart';
 import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart';
+import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -154,7 +156,6 @@ class SettingsScreen extends ConsumerWidget {
                     child: Material(
                       color: Colors.transparent,
                       child: ListTile(
-                        contentPadding: EdgeInsets.zero,
                       leading: Icon(
                         isPro ? Icons.star_rounded : Icons.star_outline_rounded,
                         color: aurora.accent,
@@ -169,6 +170,11 @@ class SettingsScreen extends ConsumerWidget {
                             ? AppStrings.proActiveHint
                             : AppStrings.proUpsellHint,
                       ),
+                      trailing: const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                      ),
+                      onTap: () => context.push(AppRoute.profile.route),
                     ),
                     ),
                   ),
@@ -222,19 +228,6 @@ class SettingsScreen extends ConsumerWidget {
                               size: 18,
                             ),
                             onTap: () => _openUrl(AppUrls.termsOfService),
-                          ),
-                          Divider(height: 1, color: aurora.border),
-                          ListTile(
-                            leading: Icon(
-                              Icons.code_rounded,
-                              color: aurora.accent,
-                            ),
-                            title: const Text(AppStrings.sourceCode),
-                            trailing: const Icon(
-                              Icons.open_in_new_rounded,
-                              size: 18,
-                            ),
-                            onTap: () => _openUrl(AppUrls.sourceCode),
                           ),
                         ],
                       ),

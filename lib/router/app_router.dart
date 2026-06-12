@@ -7,7 +7,9 @@ import 'package:remind_ai/features/dreams/presentation/dream_input_screen.dart';
 import 'package:remind_ai/features/dreams/presentation/history_screen.dart';
 import 'package:remind_ai/features/dreams/presentation/interpretation_result_screen.dart';
 import 'package:remind_ai/features/home/presentation/home_screen.dart';
+import 'package:remind_ai/features/insights/presentation/insights_screen.dart';
 import 'package:remind_ai/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:remind_ai/features/profile/presentation/profile_screen.dart';
 import 'package:remind_ai/features/settings/presentation/settings_screen.dart';
 import 'package:remind_ai/features/splash/presentation/splash_screen.dart';
 import 'package:remind_ai/router/shared_axis_extension.dart';
@@ -22,7 +24,9 @@ enum AppRoute {
   dreamInput,
   result,
   history,
-  settings;
+  settings,
+  profile,
+  insights;
 
   String get route => switch (this) {
         AppRoute.splash => '/',
@@ -32,6 +36,8 @@ enum AppRoute {
         AppRoute.result => '/result',
         AppRoute.history => '/history',
         AppRoute.settings => '/settings',
+        AppRoute.profile => '/profile',
+        AppRoute.insights => '/insights',
       };
 
   String get name => toString().replaceAll('AppRoute.', '');
@@ -75,6 +81,16 @@ GoRouter appRouter(Ref ref) => GoRouter(
           path: AppRoute.settings.route,
           builder: (BuildContext context, GoRouterState state) =>
               const SettingsScreen(),
+        ).sharedAxis(),
+        GoRoute(
+          path: AppRoute.profile.route,
+          builder: (BuildContext context, GoRouterState state) =>
+              const ProfileScreen(),
+        ).sharedAxis(),
+        GoRoute(
+          path: AppRoute.insights.route,
+          builder: (BuildContext context, GoRouterState state) =>
+              const InsightsScreen(),
         ).sharedAxis(),
       ],
     );

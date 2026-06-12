@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AccessTierState {
 
- AccessTier get tier;
+ AccessTier get tier;// For subscriptions: when the current Pro entitlement lapses. Null for
+// free users (and treated as no known expiry).
+ DateTime? get expiry;
 /// Create a copy of AccessTierState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $AccessTierStateCopyWith<AccessTierState> get copyWith => _$AccessTierStateCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccessTierState&&(identical(other.tier, tier) || other.tier == tier));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccessTierState&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.expiry, expiry) || other.expiry == expiry));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,tier);
+int get hashCode => Object.hash(runtimeType,tier,expiry);
 
 @override
 String toString() {
-  return 'AccessTierState(tier: $tier)';
+  return 'AccessTierState(tier: $tier, expiry: $expiry)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $AccessTierStateCopyWith<$Res>  {
   factory $AccessTierStateCopyWith(AccessTierState value, $Res Function(AccessTierState) _then) = _$AccessTierStateCopyWithImpl;
 @useResult
 $Res call({
- AccessTier tier
+ AccessTier tier, DateTime? expiry
 });
 
 
@@ -62,10 +64,11 @@ class _$AccessTierStateCopyWithImpl<$Res>
 
 /// Create a copy of AccessTierState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? tier = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? tier = null,Object? expiry = freezed,}) {
   return _then(_self.copyWith(
 tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
-as AccessTier,
+as AccessTier,expiry: freezed == expiry ? _self.expiry : expiry // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
@@ -150,10 +153,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AccessTier tier)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AccessTier tier,  DateTime? expiry)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AccessTierState() when $default != null:
-return $default(_that.tier);case _:
+return $default(_that.tier,_that.expiry);case _:
   return orElse();
 
 }
@@ -171,10 +174,10 @@ return $default(_that.tier);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AccessTier tier)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AccessTier tier,  DateTime? expiry)  $default,) {final _that = this;
 switch (_that) {
 case _AccessTierState():
-return $default(_that.tier);case _:
+return $default(_that.tier,_that.expiry);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -191,10 +194,10 @@ return $default(_that.tier);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AccessTier tier)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AccessTier tier,  DateTime? expiry)?  $default,) {final _that = this;
 switch (_that) {
 case _AccessTierState() when $default != null:
-return $default(_that.tier);case _:
+return $default(_that.tier,_that.expiry);case _:
   return null;
 
 }
@@ -206,10 +209,13 @@ return $default(_that.tier);case _:
 
 
 class _AccessTierState implements AccessTierState {
-  const _AccessTierState({this.tier = AccessTier.free});
+  const _AccessTierState({this.tier = AccessTier.free, this.expiry});
   
 
 @override@JsonKey() final  AccessTier tier;
+// For subscriptions: when the current Pro entitlement lapses. Null for
+// free users (and treated as no known expiry).
+@override final  DateTime? expiry;
 
 /// Create a copy of AccessTierState
 /// with the given fields replaced by the non-null parameter values.
@@ -221,16 +227,16 @@ _$AccessTierStateCopyWith<_AccessTierState> get copyWith => __$AccessTierStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AccessTierState&&(identical(other.tier, tier) || other.tier == tier));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AccessTierState&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.expiry, expiry) || other.expiry == expiry));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,tier);
+int get hashCode => Object.hash(runtimeType,tier,expiry);
 
 @override
 String toString() {
-  return 'AccessTierState(tier: $tier)';
+  return 'AccessTierState(tier: $tier, expiry: $expiry)';
 }
 
 
@@ -241,7 +247,7 @@ abstract mixin class _$AccessTierStateCopyWith<$Res> implements $AccessTierState
   factory _$AccessTierStateCopyWith(_AccessTierState value, $Res Function(_AccessTierState) _then) = __$AccessTierStateCopyWithImpl;
 @override @useResult
 $Res call({
- AccessTier tier
+ AccessTier tier, DateTime? expiry
 });
 
 
@@ -258,10 +264,11 @@ class __$AccessTierStateCopyWithImpl<$Res>
 
 /// Create a copy of AccessTierState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? tier = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? tier = null,Object? expiry = freezed,}) {
   return _then(_AccessTierState(
 tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
-as AccessTier,
+as AccessTier,expiry: freezed == expiry ? _self.expiry : expiry // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 

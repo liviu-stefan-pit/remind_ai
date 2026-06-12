@@ -1,17 +1,37 @@
 import 'package:remind_ai/config/access_tier/access_tier.dart';
 import 'package:remind_ai/config/access_tier/access_tier_state.dart';
+import 'package:remind_ai/core/services/entitlement_cache.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'access_tier_logic.g.dart';
 
+/// Single source of truth for the user's tier, consumed by every UI gate.
+///
+/// The tier is only ever written by the entitlement services (RevenueCat SDK
+/// listener on Android/Web, REST poll on Windows) via [applyEntitlement]; the
+/// UI never sets it directly. On startup it hydrates from [EntitlementCache] so
+/// Pro survives offline launches until the next remote validation.
 @Riverpod(keepAlive: true)
 class AccessTierLogic extends _$AccessTierLogic {
   @override
-  AccessTierState build() => const AccessTierState();
+  AccessTierState build() {
+    final cache = ref.read(entitlementCacheProvider);
+    return AccessTierState(tier: cache.readTier(), expiry: cache.readExpiry());
+  }
 
-  void setTier(AccessTier tier) => state = state.copyWith(tier: tier);
+  /// Applies a freshly validated entitlement and mirrors it to the local cache.
+  void applyEntitlement({required bool isActive, DateTime? expiry}) {
+    final tier = isActive ? AccessTier.pro : AccessTier.free;
+    state = state.copyWith(tier: tier, expiry: isActive ? expiry : null);
+    ref.read(entitlementCacheProvider).write(
+      tier: tier,
+      expiry: isActive ? expiry : null,
+    );
+  }
 
-  void toggle() => state = state.copyWith(
-    tier: state.tier.isPro ? AccessTier.free : AccessTier.pro,
-  );
+  void setTier(AccessTier tier, {DateTime? expiry}) =>
+      applyEntitlement(isActive: tier.isPro, expiry: expiry);
+
+  /// Dev/test helper to flip the tier without a real purchase.
+  void toggle() => setTier(state.tier.isPro ? AccessTier.free : AccessTier.pro);
 }

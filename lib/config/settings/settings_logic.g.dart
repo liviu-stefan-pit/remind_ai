@@ -41,7 +41,7 @@ final class SettingsLogicProvider
   }
 }
 
-String _$settingsLogicHash() => r'c7a36a392d44ac9dd6cfeceacb6b06be7adf7c88';
+String _$settingsLogicHash() => r'1fdb32c385c817a2ae88124525cbdfefd9872f74';
 
 abstract class _$SettingsLogic extends $Notifier<SettingsState> {
   SettingsState build();

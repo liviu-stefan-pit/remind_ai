@@ -14,9 +14,27 @@ abstract final class AppStrings {
       'That is a novel. Keep it under 2000 characters.';
   static const String upgradeToPro = 'Unlock with Pro:';
   static const String dailyLimitReached =
-      'Your subconscious needs rest too. 3 daily interpretations used — see you tomorrow!';
+      'Your subconscious needs rest too. Daily interpretations used — see you tomorrow!';
+  static const String proRequired =
+      'This is a Pro interpretation style. Upgrade to unlock it.';
+  static const String rateLimited =
+      'Easy, dream-chaser. Give it a few seconds before the next reading.';
   static const String unexpectedError =
       'The dream gremlins struck again. Try once more.';
+
+  // Interpretation style descriptions (shown on the style cards).
+  static const String styleStandardName = 'Standard';
+  static const String styleStandardDesc =
+      'Clear symbol meanings, straight to the point.';
+  static const String stylePsychologicalName = 'Psychological';
+  static const String stylePsychologicalDesc =
+      'What your dream reveals about your inner life.';
+  static const String styleMythicName = 'Mythic';
+  static const String styleMythicDesc =
+      'Your dream read through myth and folklore.';
+  static const String styleCreativeName = 'Creative';
+  static const String styleCreativeDesc =
+      'Reimagined as a short, surreal story or poem.';
   static const String interpretationReady = 'The cosmos have spoken!';
   static const String dreamHistory = 'Past Visions';
   static const String dreamInterpretation = 'What It All Means';
@@ -58,6 +76,34 @@ abstract final class AppStrings {
   static const String proActiveHint = 'All interpretation styles unlocked';
   static const String proUpsellHint =
       'Unlock Psychological, Mythic, and Creative styles';
+
+  // Profile & Pro
+  static const String profile = 'Profile';
+  static const String insights = 'Insights';
+  static const String dreamer = 'Dreamer';
+  static const String tierPro = 'PRO';
+  static const String tierFree = 'FREE';
+  static const String signInWithGoogle = 'Sign in with Google';
+  static const String signOut = 'Sign out';
+  static const String signInFailed =
+      'Sign-in failed. Please try again.';
+  static const String upgradeCta = 'Upgrade to Pro — \$1.99/month';
+  static const String proPitchTitle = 'Go Pro';
+  static const String proPitchPrice = '\$1.99 / month';
+  static const String renewsOn = 'Renews on';
+  static const String stillNotPro =
+      'No active subscription found yet. Try again in a moment.';
+  static const String purchaseNotConfigured =
+      'Purchases are not configured for this build.';
+  static const String backendNotConfigured =
+      'Cloud features are not configured in this build. Sign-in and sync are '
+      'unavailable.';
+  static const String waitingForPayment =
+      'Waiting for your payment to confirm...';
+  static const String waitingForPaymentHint =
+      'Complete the checkout in your browser, then return here. We will detect '
+      'your Pro status automatically.';
+  static const String refreshStatus = 'Refresh status';
   static const String data = 'Data';
   static const String clearHistory = 'Clear dream history';
   static const String clearHistoryConfirmTitle = 'Clear all dreams?';
@@ -76,7 +122,6 @@ abstract final class AppStrings {
   static const String legal = 'Legal';
   static const String privacyPolicy = 'Privacy Policy';
   static const String termsOfService = 'Terms of Service';
-  static const String sourceCode = 'Source Code';
   static const String ageGateLabel = 'I confirm I am 18 or older';
   static const String ageGateRequired =
       'Confirm you are 18+ to continue. Gemini API terms require it.';
@@ -96,10 +141,9 @@ abstract final class AppUrls {
   // (e.g. GitHub Pages / Vercel static page) at these exact URLs, or update
   // them here and in STORE_METADATA.md. See PUBLISH_NEXT_STEPS.md step 3.
   static const String privacyPolicy =
-      'https://liviustefan.github.io/remind-ai/privacy';
+      'https://liviu-stefan-pit.github.io/remind_ai/privacy/';
   static const String termsOfService =
-      'https://liviustefan.github.io/remind-ai/terms';
-  static const String sourceCode = 'https://github.com/liviustefan/remind-ai';
+      'https://liviu-stefan-pit.github.io/remind_ai/terms/';
   static const String contactEmail = 'liviustefan.petroaia@gmail.com';
 }
 

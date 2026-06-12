@@ -26,10 +26,22 @@ class HomeScreen extends StatelessWidget {
         title: const LogoBreathing(size: 20),
         actions: [
           IconButton(
+            icon: const Icon(Icons.insights_rounded),
+            color: aurora.textDim,
+            tooltip: AppStrings.insights,
+            onPressed: () => context.push(AppRoute.insights.route),
+          ),
+          IconButton(
             icon: const Icon(Icons.history_rounded),
             color: aurora.textDim,
             tooltip: AppStrings.dreamHistory,
             onPressed: () => context.push(AppRoute.history.route),
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_outline_rounded),
+            color: aurora.textDim,
+            tooltip: AppStrings.profile,
+            onPressed: () => context.push(AppRoute.profile.route),
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),

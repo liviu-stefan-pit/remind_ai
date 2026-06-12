@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:remind_ai/config/access_tier/access_tier_logic.dart';
 import 'package:remind_ai/constants/app_prompts.dart';
 import 'package:remind_ai/core/errors/app_exception.dart';
 import 'package:remind_ai/core/network/gemini_client.dart';
-import 'package:remind_ai/core/services/free_usage_service.dart';
+import 'package:remind_ai/core/services/cloud_sync_service.dart';
+import 'package:remind_ai/core/services/usage_quota_service.dart';
 import 'package:remind_ai/features/dreams/data/datasources/dream_local_datasource.dart';
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
 import 'package:remind_ai/features/dreams/domain/dream_style.dart';
@@ -25,18 +28,39 @@ class SubmitDreamLogic extends _$SubmitDreamLogic {
 
     // Snapshot tier before any await so it can't change mid-flight.
     final tier = ref.read(accessTierLogicProvider).tier;
-    final freeUsage = ref.read(freeUsageServiceProvider);
+    final quota = ref.read(usageQuotaServiceProvider);
 
-    // Gate: free users are limited to one request per calendar day.
-    if (!tier.isPro && !freeUsage.canUseFreeRequest()) {
+    // Gate: Pro-only styles require an active Pro entitlement. The UI already
+    // locks these, but enforce here so the network call can't be triggered by
+    // a stale/forged UI state.
+    if (style.isPro && !tier.isPro) {
+      state = AsyncError(const ProRequiredException(), StackTrace.current);
+      return;
+    }
+
+    // Gate: light throttle against rapid-fire scripted submissions.
+    if (quota.isThrottled()) {
+      state = AsyncError(const RateLimitException(), StackTrace.current);
+      return;
+    }
+
+    // Gate: per-tier daily cap (free and Pro both bounded).
+    if (!quota.canSubmit(tier)) {
       state = AsyncError(const DailyLimitException(), StackTrace.current);
       return;
     }
 
+    // Count this attempt toward the throttle window before awaiting so even
+    // in-flight/failed requests space out subsequent taps.
+    await quota.markSubmitAttempt();
+
     state = await AsyncValue.guard(() async {
-      final interpretation = await ref
-          .read(geminiClientProvider)
-          .generate(prompt: dreamText, systemInstruction: _promptFor(style));
+      final interpretation = await ref.read(geminiClientProvider).generate(
+            prompt: dreamText,
+            systemInstruction: _promptFor(style),
+            model: style.model,
+            maxOutputTokens: style.maxOutputTokens,
+          );
 
       final entry = DreamEntry(
         id: generateId(),
@@ -51,11 +75,12 @@ class SubmitDreamLogic extends _$SubmitDreamLogic {
       // Ensure the history provider rebuilds with the new entry on next access.
       ref.invalidate(dreamHistoryLogicProvider);
 
-      // Record usage after a successful save so a failed write never
-      // silently consumes the daily quota.
-      if (!tier.isPro) {
-        await freeUsage.recordFreeUsage();
-      }
+      // Best-effort cloud backup (no-op unless a Pro user is signed in).
+      unawaited(ref.read(syncLogicProvider.notifier).syncNow());
+
+      // Record usage after a successful save so a failed request or write
+      // never silently consumes the daily quota. Applies to all tiers.
+      await quota.recordUsage();
 
       return entry;
     });
@@ -64,9 +89,9 @@ class SubmitDreamLogic extends _$SubmitDreamLogic {
   String _promptFor(DreamStyle style) {
     return switch (style) {
       DreamStyle.standard => AppPrompts.standard,
-      DreamStyle.psychological => AppPrompts.standard,
-      DreamStyle.mythic => AppPrompts.standard,
-      DreamStyle.creative => AppPrompts.standard,
+      DreamStyle.psychological => AppPrompts.psychological,
+      DreamStyle.mythic => AppPrompts.mythic,
+      DreamStyle.creative => AppPrompts.creative,
     };
   }
 }

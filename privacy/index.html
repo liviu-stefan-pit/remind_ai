@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="index,follow" />
+  <title>Privacy Policy — REMind-Ai</title>
+  <meta name="description" content="Privacy Policy for REMind-Ai, an AI dream interpretation app." />
+  <style>
+    :root {
+      --bg: #0e0b1a;
+      --panel: #171326;
+      --text: #e9e6f5;
+      --muted: #a79fc4;
+      --gold: #e8c074;
+      --border: #2a2440;
+      --link: #d8b25f;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 600px at 50% -10%, #1c1633 0%, var(--bg) 60%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+      line-height: 1.65;
+      font-size: 17px;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 48px 22px 80px; }
+    header { text-align: center; margin-bottom: 36px; }
+    .badge {
+      display: inline-block; letter-spacing: 2px; text-transform: uppercase;
+      font-size: 12px; color: var(--gold); border: 1px solid var(--border);
+      border-radius: 999px; padding: 6px 14px; margin-bottom: 18px;
+    }
+    h1 { font-size: 30px; margin: 0 0 8px; }
+    h2 { font-size: 21px; margin: 36px 0 10px; color: var(--gold); }
+    h3 { font-size: 17px; margin: 22px 0 6px; color: #d6cef0; }
+    .meta { color: var(--muted); font-size: 14px; margin: 4px 0; }
+    p, li { color: var(--text); }
+    a { color: var(--link); text-decoration: none; border-bottom: 1px solid rgba(216,178,95,.4); }
+    a:hover { border-bottom-color: var(--link); }
+    blockquote {
+      margin: 16px 0; padding: 14px 18px; background: var(--panel);
+      border-left: 3px solid var(--gold); border-radius: 8px; color: var(--muted);
+    }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+    code { background: var(--panel); padding: 2px 6px; border-radius: 5px; font-size: 14px; }
+    .foot { margin-top: 48px; text-align: center; color: var(--muted); font-size: 13px; }
+    .foot a { margin: 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="badge">REMind-Ai</div>
+      <h1>Privacy Policy</h1>
+      <p class="meta"><strong>Effective date:</strong> May 2026</p>
+      <p class="meta"><strong>Last updated:</strong> June 2026</p>
+    </header>
+
+    <p>REMind-Ai ("the app", "we") is an independent hobby project developed by
+    <strong>Liviu-Stefan Petroaia</strong> ("the developer"). This policy explains what data
+    the app handles and how. We are not affiliated with any company.</p>
+
+    <p>Contact for any privacy question or data request:
+    <a href="mailto:liviustefan.petroaia@gmail.com">liviustefan.petroaia@gmail.com</a></p>
+
+    <hr />
+
+    <h2>1. Who this policy applies to</h2>
+    <p>This policy applies to everyone who uses REMind-Ai on Android, Windows, or
+    the Web. You must be <strong>18 years or older</strong> to use the app — this is required
+    by Google's Gemini API Terms of Service, which power the interpretation feature.</p>
+
+    <h2>2. What data the app handles</h2>
+    <p>REMind-Ai does <strong>not</strong> require an account, email, password, phone number,
+    or any registration. We do <strong>not</strong> collect analytics, advertising IDs,
+    device identifiers, location, contacts, camera, microphone, or any
+    behavioural telemetry.</p>
+    <p>The only personal content the app handles is the text <strong>you</strong> type into the
+    dream input field, plus the AI-generated interpretation returned for that text.</p>
+
+    <h3>Data stored on your device</h3>
+    <ul>
+      <li>Your dream entries and their interpretations</li>
+      <li>App preferences (theme, motion, onboarding state, age confirmation)</li>
+    </ul>
+    <p>This data is stored locally on your device in an encrypted Hive database.
+    The encryption key is held in the platform secure storage
+    (Android Keystore / Windows DPAPI / browser-local storage on Web). The
+    developer cannot read your local database.</p>
+    <p>You can wipe all locally stored data at any time through
+    <strong>Settings → Clear dream history</strong>, or by uninstalling the app / clearing
+    site data on the Web build.</p>
+
+    <h3>Data sent off-device</h3>
+    <p>When you tap <strong>Unravel It</strong> (the "Interpret" action), the text of the
+    specific dream you submitted is sent over HTTPS to Google's Gemini API
+    (<code>generativelanguage.googleapis.com</code>) so the AI model can produce an
+    interpretation. Only the dream text and the prompt parameters are sent.
+    The interpretation returned by Google is shown to you and stored locally.</p>
+    <p>We do not send your dream text to any other service. The developer does
+    <strong>not</strong> receive, see, or store your dream text.</p>
+
+    <h3>Optional Pro tier (off by default)</h3>
+    <p>The base app needs no account and keeps everything on your device. If you
+    choose to subscribe to an optional <strong>Pro</strong> tier (where available), these
+    additional, opt-in features may apply:</p>
+    <ul>
+      <li><strong>Sign-in:</strong> Google Sign-In is used to identify your subscription. This
+      shares your Google account email and basic profile with the app's backend provider.</li>
+      <li><strong>Cloud backup:</strong> your dream entries may be backed up to Google Cloud
+      Firestore so they sync across your devices. This is only enabled for
+      signed-in Pro users and can be turned off by signing out.</li>
+      <li><strong>Payments:</strong> subscription billing is handled by <strong>RevenueCat</strong> together
+      with <strong>Google Play Billing</strong> (Android) or <strong>Stripe</strong> (web). We never see or
+      store your card details; those are handled by the payment provider.</li>
+    </ul>
+    <p>If you never sign in or subscribe, none of the above occurs and the app
+    remains fully local.</p>
+
+    <h2>3. Third-party processor: Google Gemini</h2>
+    <p>Dream text is processed by <strong>Google LLC</strong> via the Gemini API. Google's use
+    of that data is governed by Google's own terms:</p>
+    <ul>
+      <li><strong>Gemini API — Terms of Service:</strong>
+      <a href="https://ai.google.dev/gemini-api/terms">ai.google.dev/gemini-api/terms</a></li>
+      <li><strong>Google Privacy Policy:</strong>
+      <a href="https://policies.google.com/privacy">policies.google.com/privacy</a></li>
+    </ul>
+    <blockquote>Paid API tier: the app uses the <strong>paid</strong> Gemini API tier. Under Google's
+    paid-services terms, Google does <strong>not</strong> use your prompts or the model's
+    responses to improve its products, and they are not used for training.
+    Google may still process the content transiently to generate the
+    interpretation and for abuse monitoring as described in its terms. As a
+    general precaution with any AI service, avoid submitting content you would
+    consider highly sensitive or that could identify you.</blockquote>
+    <p>Your dream text is sent to Google with an anonymous API key. It is not tied
+    to your name, an account, or a device identifier on our side. Data is
+    encrypted in transit (TLS / HTTPS) on its way to Google.</p>
+
+    <h2>4. Legal bases (GDPR / UK GDPR / Romanian Law 190/2018)</h2>
+    <p>The developer is based in Romania, so processing complies with the EU GDPR as
+    implemented in Romania by <strong>Law 190/2018</strong>. Where the GDPR applies, our legal
+    basis for processing your dream text via Google Gemini is <strong>consent</strong>, which you
+    give by tapping the Interpret button after reading this policy. You can withdraw
+    consent at any time by not submitting further dreams and by clearing your local history.</p>
+    <p>We do not transfer any data ourselves — Google Gemini handles its own
+    international transfers under Google's data processing terms.</p>
+
+    <h2>5. Children</h2>
+    <p>REMind-Ai is <strong>not intended for users under 18</strong>. The app shows an explicit
+    age confirmation on first launch. If a person under 18 has used the app,
+    their guardian can email <a href="mailto:liviustefan.petroaia@gmail.com">liviustefan.petroaia@gmail.com</a>
+    and we will help them clear local data and remove any record we may hold (which, in
+    practice, is none — we do not store user content).</p>
+
+    <h2>6. Your rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li>Access — but there is nothing on our side to access; your content lives only on your device.</li>
+      <li>Erasure — use <strong>Settings → Clear dream history</strong>, or uninstall.</li>
+      <li>Object / withdraw consent — stop using the Interpret feature.</li>
+      <li>Lodge a complaint with your local data protection authority.</li>
+    </ul>
+    <p>For anything else, email <a href="mailto:liviustefan.petroaia@gmail.com">liviustefan.petroaia@gmail.com</a>.</p>
+
+    <h2>7. Security</h2>
+    <ul>
+      <li>Local Hive boxes are encrypted with AES-256 using a random key generated
+      on first launch and held in platform secure storage.</li>
+      <li>All network traffic to Google Gemini uses HTTPS.</li>
+      <li>The Android build uses Android's network security config to block
+      cleartext traffic and disables device/cloud backup of app data.</li>
+      <li>The web build is delivered with a strict Content-Security-Policy that
+      only permits requests to the Gemini endpoint and self-hosted assets.</li>
+    </ul>
+
+    <h2>8. Changes to this policy</h2>
+    <p>We may update this policy. The "Last updated" date at the top reflects the
+    most recent change. Significant changes will be announced in the app's release notes.</p>
+
+    <h2>9. Contact</h2>
+    <p>Liviu-Stefan Petroaia — independent developer (no company affiliation)<br />
+    Email: <a href="mailto:liviustefan.petroaia@gmail.com">liviustefan.petroaia@gmail.com</a></p>
+
+    <div class="foot">
+      <a href="../privacy/">Privacy Policy</a> · <a href="../terms/">Terms of Service</a>
+    </div>
+  </div>
+</body>
+</html>

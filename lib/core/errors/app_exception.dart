@@ -19,5 +19,22 @@ final class AuthException extends AppException {
 
 final class DailyLimitException extends AppException {
   const DailyLimitException()
-    : super('Daily free interpretation limit reached.');
+    : super('Daily interpretation limit reached.');
+}
+
+/// Raised when a non-Pro user attempts to run a Pro-only interpretation style.
+final class ProRequiredException extends AppException {
+  const ProRequiredException()
+    : super('This interpretation style requires Pro.');
+}
+
+/// Raised when submissions arrive faster than the minimum allowed interval.
+/// Light client-side friction against scripted/bot abuse.
+final class RateLimitException extends AppException {
+  const RateLimitException()
+    : super('You are going too fast. Wait a moment and try again.');
+}
+
+final class PurchaseException extends AppException {
+  const PurchaseException(super.message);
 }

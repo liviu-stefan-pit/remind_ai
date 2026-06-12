@@ -61,9 +61,12 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
         },
         loading: () {},
         error: (error, _) {
-          final message = error is DailyLimitException
-              ? AppStrings.dailyLimitReached
-              : AppStrings.unexpectedError;
+          final message = switch (error) {
+            DailyLimitException() => AppStrings.dailyLimitReached,
+            ProRequiredException() => AppStrings.proRequired,
+            RateLimitException() => AppStrings.rateLimited,
+            _ => AppStrings.unexpectedError,
+          };
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(message)),
           );
@@ -184,8 +187,8 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
   }
 
   Widget _buildStyleGrid({required bool isPro}) {
-    bool isLocked(DreamStyle s) => !isPro && s != DreamStyle.standard;
-    Widget card(DreamStyle style, int index) => _StyleTile(
+    bool isLocked(DreamStyle s) => !isPro && s.isPro;
+    Widget card(DreamStyle style) => _StyleTile(
           style: style,
           isSelected: _selectedStyle == style,
           isLocked: isLocked(style),
@@ -204,19 +207,24 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
           },
         );
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: AppSpacing.sm,
-      crossAxisSpacing: AppSpacing.sm,
-      childAspectRatio: 2.6,
-      children: [
-        card(DreamStyle.standard, 0),
-        card(DreamStyle.psychological, 1),
-        card(DreamStyle.mythic, 2),
-        card(DreamStyle.creative, 3),
-      ],
+    const styles = DreamStyle.values;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Two columns normally; collapse to one on very narrow viewports so
+        // the title + description never gets clipped.
+        final crossAxisCount = constraints.maxWidth < 360 ? 1 : 2;
+        final aspectRatio = crossAxisCount == 1 ? 3.6 : 1.45;
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: crossAxisCount,
+          mainAxisSpacing: AppSpacing.sm,
+          crossAxisSpacing: AppSpacing.sm,
+          childAspectRatio: aspectRatio,
+          children: [for (final style in styles) card(style)],
+        );
+      },
     );
   }
 
@@ -244,7 +252,7 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
   }
 }
 
-class _StyleTile extends StatelessWidget {
+class _StyleTile extends StatefulWidget {
   const _StyleTile({
     required this.style,
     required this.isSelected,
@@ -265,69 +273,151 @@ class _StyleTile extends StatelessWidget {
       };
 
   static String labelFor(DreamStyle s) => switch (s) {
-        DreamStyle.standard => 'Standard',
-        DreamStyle.psychological => 'Psychological',
-        DreamStyle.mythic => 'Mythic',
-        DreamStyle.creative => 'Creative',
+        DreamStyle.standard => AppStrings.styleStandardName,
+        DreamStyle.psychological => AppStrings.stylePsychologicalName,
+        DreamStyle.mythic => AppStrings.styleMythicName,
+        DreamStyle.creative => AppStrings.styleCreativeName,
       };
+
+  static String descFor(DreamStyle s) => switch (s) {
+        DreamStyle.standard => AppStrings.styleStandardDesc,
+        DreamStyle.psychological => AppStrings.stylePsychologicalDesc,
+        DreamStyle.mythic => AppStrings.styleMythicDesc,
+        DreamStyle.creative => AppStrings.styleCreativeDesc,
+      };
+
+  @override
+  State<_StyleTile> createState() => _StyleTileState();
+}
+
+class _StyleTileState extends State<_StyleTile> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     final cs = context.colorScheme;
     final aurora = context.auroraTheme;
 
+    final isSelected = widget.isSelected;
+    final isLocked = widget.isLocked;
+    final active = isSelected || _hovered;
+
     final borderColor = isSelected
         ? aurora.accent
-        : aurora.border;
+        : (_hovered ? aurora.borderStrong : aurora.border);
     final fg = isLocked
         ? aurora.textDim
         : (isSelected ? aurora.accent : cs.onSurface);
+    final bg = isSelected
+        ? aurora.accent.withValues(alpha: 0.08)
+        : aurora.bgElevated.withValues(alpha: _hovered ? 0.55 : 0.4);
 
     return Semantics(
       button: true,
       selected: isSelected,
       enabled: !isLocked,
-      label: labelFor(style),
-      child: MouseRegion(
-      cursor: isLocked
-          ? SystemMouseCursors.forbidden
-          : SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? aurora.accent.withValues(alpha: 0.06)
-                : aurora.bgElevated.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor, width: 1),
-          ),
-          child: Row(
-            children: [
-              Icon(_iconFor(style), size: 18, color: fg),
-              const Gap(AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  labelFor(style),
-                  style: context.textTheme.titleSmall?.copyWith(color: fg),
+      label: '${_StyleTile.labelFor(widget.style)}. '
+          '${_StyleTile.descFor(widget.style)}'
+          '${widget.style.isPro ? ' Pro style.' : ''}',
+      child: Tooltip(
+        message: _StyleTile.descFor(widget.style),
+        waitDuration: const Duration(milliseconds: 400),
+        child: MouseRegion(
+          cursor: isLocked
+              ? SystemMouseCursors.forbidden
+              : SystemMouseCursors.click,
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
+          child: GestureDetector(
+            onTap: widget.onTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: borderColor,
+                  width: active ? 1.4 : 1,
                 ),
               ),
-              if (isLocked)
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: aurora.accent.withValues(alpha: 0.6),
-                    shape: BoxShape.circle,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(_StyleTile._iconFor(widget.style),
+                          size: 20, color: fg),
+                      const Gap(AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          _StyleTile.labelFor(widget.style),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.textTheme.titleSmall
+                              ?.copyWith(color: fg),
+                        ),
+                      ),
+                      if (widget.style.isPro) _ProBadge(locked: isLocked),
+                    ],
                   ),
-                ),
-            ],
+                  const Gap(6),
+                  Expanded(
+                    child: Text(
+                      _StyleTile.descFor(widget.style),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: aurora.textDim,
+                        height: 1.25,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Small gold "PRO" pill shown on Pro-only style cards. Dimmed while locked.
+class _ProBadge extends StatelessWidget {
+  const _ProBadge({required this.locked});
+
+  final bool locked;
+
+  @override
+  Widget build(BuildContext context) {
+    final aurora = context.auroraTheme;
+    final accent = aurora.accent;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: locked ? 0.12 : 0.18),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: accent.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (locked) ...[
+            Icon(Icons.lock_outline, size: 10, color: accent),
+            const Gap(3),
+          ],
+          Text(
+            AppStrings.tierPro,
+            style: context.textTheme.labelSmall?.copyWith(
+              color: accent,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }

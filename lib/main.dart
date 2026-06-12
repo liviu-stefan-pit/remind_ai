@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:remind_ai/app.dart';
+import 'package:remind_ai/core/services/firebase_service.dart';
 import 'package:remind_ai/hive/hive.dart';
 
 Future<void> main() async {
@@ -25,7 +26,16 @@ Future<void> bootstrap() async {
     return;
   }
 
-  runApp(const ProviderScope(child: RemindAiApp()));
+  // Optional backend: succeeds only with real Firebase credentials. The app
+  // runs fully (Free tier, local-only) when this returns false.
+  final firebaseReady = await initFirebase();
+
+  runApp(
+    ProviderScope(
+      overrides: [firebaseReadyProvider.overrideWithValue(firebaseReady)],
+      child: const RemindAiApp(),
+    ),
+  );
 }
 
 /// Shown only if local storage cannot be initialized even after the
