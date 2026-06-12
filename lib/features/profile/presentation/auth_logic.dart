@@ -25,15 +25,30 @@ class AuthLogic extends _$AuthLogic {
     ref.onDispose(() => _sub?.cancel());
 
     final current = repo.currentUser;
-    if (current != null) _handleUser(current);
-    return AsyncData(current);
+    // The initial state is returned below; only the RevenueCat identity sync is
+    // deferred, because it mutates accessTierLogicProvider and Riverpod forbids
+    // modifying another provider during this provider's build.
+    if (current != null) {
+      Future.microtask(() => _syncPurchases(current));
+    }
+    return AsyncData(_visible(current));
   }
 
+  /// Anonymous users back Firebase AI Logic for the free tier but are not a
+  /// "real" account, so they surface as signed-out to the UI.
+  User? _visible(User? user) =>
+      (user == null || user.isAnonymous) ? null : user;
+
   void _handleUser(User? user) {
-    state = AsyncData(user);
+    state = AsyncData(_visible(user));
+    _syncPurchases(user);
+  }
+
+  void _syncPurchases(User? user) {
+    final visible = _visible(user);
     final purchases = ref.read(purchasesServiceProvider);
-    if (user != null) {
-      unawaited(purchases.onSignIn(user.uid));
+    if (visible != null) {
+      unawaited(purchases.onSignIn(visible.uid));
     } else {
       unawaited(purchases.onSignOut());
     }
@@ -51,5 +66,12 @@ class AuthLogic extends _$AuthLogic {
 
   Future<void> signOut() async {
     await ref.read(authRepositoryProvider).signOut();
+    // Re-establish an anonymous session so Firebase AI Logic keeps working
+    // for the free tier after the user signs out of their Google account.
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+    } on Object catch (_) {
+      // Non-fatal; interpretation surfaces a network error if it can't auth.
+    }
   }
 }

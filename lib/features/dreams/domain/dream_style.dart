@@ -1,3 +1,5 @@
+import 'package:remind_ai/core/network/gemini_client.dart';
+
 enum DreamStyle { standard, psychological, mythic, creative }
 
 extension DreamStyleX on DreamStyle {
@@ -5,9 +7,9 @@ extension DreamStyleX on DreamStyle {
   bool get isPro => this != DreamStyle.standard;
 
   /// Gemini model that backs this style. Standard uses the fast, low-cost
-  /// model; Pro styles use the higher-quality model.
-  String get model =>
-      isPro ? 'gemini-3.5-flash' : 'gemini-2.5-flash-lite';
+  /// model; Pro styles use the higher-quality model. Model names are defined
+  /// once in `gemini_client.dart`.
+  String get model => isPro ? kProModel : kStandardModel;
 
   /// Output budget tuned to the prompt's target length. Pro styles produce
   /// longer, richer readings, so they get a larger budget.

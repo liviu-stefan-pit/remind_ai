@@ -6,7 +6,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'revenuecat_rest_client.g.dart';
 
 /// Resolved entitlement state for a RevenueCat subscriber.
-typedef EntitlementStatus = ({bool isActive, DateTime? expiry});
+typedef EntitlementStatus = ({
+  bool isActive,
+  DateTime? expiry,
+  String? managementUrl,
+});
 
 @Riverpod(keepAlive: true)
 RevenueCatRestClient revenueCatRestClient(Ref ref) {
@@ -23,7 +27,7 @@ class RevenueCatRestClient {
 
   Future<EntitlementStatus> fetchEntitlement(String appUserId) async {
     if (!PurchasesConfig.hasWebKey) {
-      return (isActive: false, expiry: null);
+      return (isActive: false, expiry: null, managementUrl: null);
     }
     try {
       final resp = await _dio.get<Map<String, dynamic>>(
@@ -39,21 +43,28 @@ class RevenueCatRestClient {
       );
 
       final subscriber = resp.data?['subscriber'] as Map<String, dynamic>?;
+      final managementUrl = subscriber?['management_url'] as String?;
       final entitlements =
           subscriber?['entitlements'] as Map<String, dynamic>?;
       final pro =
           entitlements?[PurchasesConfig.entitlementId] as Map<String, dynamic>?;
-      if (pro == null) return (isActive: false, expiry: null);
+      if (pro == null) {
+        return (isActive: false, expiry: null, managementUrl: managementUrl);
+      }
 
       final expiresRaw = pro['expires_date'] as String?;
       final expiry = expiresRaw != null ? DateTime.tryParse(expiresRaw) : null;
       // A null expiry means a non-expiring (lifetime) grant; treat as active.
       final isActive = expiry == null || expiry.isAfter(DateTime.now());
-      return (isActive: isActive, expiry: expiry);
+      return (
+        isActive: isActive,
+        expiry: expiry,
+        managementUrl: managementUrl,
+      );
     } on DioException catch (e) {
       // Unknown subscriber → not subscribed yet, not an error.
       if (e.response?.statusCode == 404) {
-        return (isActive: false, expiry: null);
+        return (isActive: false, expiry: null, managementUrl: null);
       }
       throw NetworkException(
         'RevenueCat entitlement lookup failed.',

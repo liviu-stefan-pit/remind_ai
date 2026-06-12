@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:remind_ai/config/access_tier/access_tier_logic.dart';
+import 'package:remind_ai/config/purchases/purchases_config.dart';
 import 'package:remind_ai/constants/app_strings.dart';
 import 'package:remind_ai/core/errors/app_exception.dart';
 import 'package:remind_ai/core/services/firebase_service.dart';
@@ -205,17 +206,20 @@ class _SignedOut extends StatelessWidget {
       children: [
         const _ProPitch(),
         const Gap(AppSpacing.lg),
-        GlassButton(
-          onPressed: enabled ? onSignIn : null,
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.login_rounded, size: 18),
-              Gap(AppSpacing.sm),
-              Text(AppStrings.signInWithGoogle),
-            ],
-          ),
-        ),
+        if (PurchasesConfig.proPurchasable)
+          GlassButton(
+            onPressed: enabled ? onSignIn : null,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.login_rounded, size: 18),
+                Gap(AppSpacing.sm),
+                Text(AppStrings.signInWithGoogle),
+              ],
+            ),
+          )
+        else
+          const _ComingSoonNotice(),
       ],
     );
   }
@@ -290,15 +294,19 @@ class _SignedIn extends StatelessWidget {
         else ...[
           const _ProPitch(),
           const Gap(AppSpacing.lg),
-          if (waitingForWindows) ...[
-            _WaitingCard(onRefresh: onRefresh),
-            const Gap(AppSpacing.md),
+          if (PurchasesConfig.proPurchasable) ...[
+            if (waitingForWindows) ...[
+              _WaitingCard(onRefresh: onRefresh),
+              const Gap(AppSpacing.md),
+            ],
+            GlassButton(
+              onPressed: purchasing ? null : onUpgrade,
+              isLoading: purchasing,
+              child: const Text(AppStrings.upgradeCta),
+            ),
+          ] else ...[
+            const _ComingSoonNotice(),
           ],
-          GlassButton(
-            onPressed: purchasing ? null : onUpgrade,
-            isLoading: purchasing,
-            child: const Text(AppStrings.upgradeCta),
-          ),
           const Gap(AppSpacing.md),
           GlassButton(
             outlined: true,
@@ -316,6 +324,18 @@ class _ProStatusCard extends ConsumerWidget {
 
   final User user;
   final VoidCallback onSignOut;
+
+  Future<void> _openManagement(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final url = await ref.read(purchasesServiceProvider).managementUrl(user.uid);
+    if (url == null) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppStrings.manageUnavailable)),
+      );
+      return;
+    }
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -348,8 +368,19 @@ class _ProStatusCard extends ConsumerWidget {
                 style:
                     context.textTheme.bodySmall?.copyWith(color: aurora.textDim),
               ),
+              const Gap(AppSpacing.sm),
+              Text(
+                AppStrings.manageSubscriptionHint,
+                style:
+                    context.textTheme.bodySmall?.copyWith(color: aurora.textDim),
+              ),
             ],
           ),
+        ),
+        const Gap(AppSpacing.md),
+        GlassButton(
+          onPressed: () => _openManagement(context, ref),
+          child: const Text(AppStrings.manageSubscription),
         ),
         const Gap(AppSpacing.md),
         GlassButton(
@@ -507,6 +538,45 @@ class _ProPitch extends StatelessWidget {
                 ],
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Phase-1 placeholder shown wherever the Pro upgrade/sign-in CTA would appear
+/// while purchasing is disabled. Communicates that Pro is on the way without
+/// dead-ending the user on a non-functional button.
+class _ComingSoonNotice extends StatelessWidget {
+  const _ComingSoonNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final aurora = context.auroraTheme;
+    return LiquidPanel(
+      enableHoverGlow: false,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.schedule_rounded, size: 20, color: aurora.accent),
+          const Gap(AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.proComingSoon,
+                  style: context.textTheme.titleSmall,
+                ),
+                const Gap(AppSpacing.xs),
+                Text(
+                  AppStrings.proComingSoonNotice,
+                  style: context.textTheme.bodySmall
+                      ?.copyWith(color: aurora.textDim),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -47,13 +47,28 @@ site data on the Web build.
 ### Data sent off-device
 
 When you tap **Unravel It** (the "Interpret" action), the text of the
-specific dream you submitted is sent over HTTPS to Google's Gemini API
-(`generativelanguage.googleapis.com`) so the AI model can produce an
-interpretation. Only the dream text and the prompt parameters are sent.
-The interpretation returned by Google is shown to you and stored locally.
+specific dream you submitted is sent over HTTPS to Google's Gemini models,
+**routed through Firebase AI Logic** in the app's Google Firebase project, so
+the AI model can produce an interpretation. Only the dream text and the
+prompt parameters are sent. The interpretation returned by Google is shown
+to you and stored locally.
 
 We do not send your dream text to any other service. The developer does
 **not** receive, see, or store your dream text.
+
+### Anonymous sign-in and abuse protection
+
+So that requests can be routed securely without embedding any secret key in
+the app, REMind-Ai signs you in to Google Firebase **anonymously** in the
+background. This anonymous identifier exists only to authorise interpretation
+requests; it is not linked to your name, email, or any personal account, and
+it is discarded if you clear site data or uninstall.
+
+To prevent automated abuse of the AI service, requests are verified with
+**Firebase App Check**. On the Web this uses **Google reCAPTCHA**, which
+sends limited technical signals (such as interaction and device/browser
+metadata) to Google for risk analysis; on Android it uses the Play Integrity
+API. This protection processes no dream content.
 
 ### Optional Pro tier (off by default)
 
@@ -74,13 +89,17 @@ additional, opt-in features may apply:
 If you never sign in or subscribe, none of the above occurs and the app
 remains fully local.
 
-## 3. Third-party processor: Google Gemini
+## 3. Third-party processor: Google (Gemini & Firebase)
 
-Dream text is processed by **Google LLC** via the Gemini API. Google's use
-of that data is governed by Google's own terms:
+Dream text is processed by **Google LLC** via the Gemini API, reached through
+**Firebase AI Logic**. The app also uses Firebase for anonymous
+authentication and App Check, and — for Pro users only — Cloud Firestore.
+Google's use of that data is governed by Google's own terms:
 
 - **Gemini API — Terms of Service:**
   https://ai.google.dev/gemini-api/terms
+- **Firebase Terms / Data Processing:**
+  https://firebase.google.com/terms
 - **Google Privacy Policy:**
   https://policies.google.com/privacy
 
@@ -92,9 +111,10 @@ of that data is governed by Google's own terms:
 > general precaution with any AI service, avoid submitting content you would
 > consider highly sensitive or that could identify you.
 
-Your dream text is sent to Google with an anonymous API key. It is not tied
-to your name, an account, or a device identifier on our side. Data is
-encrypted in transit (TLS / HTTPS) on its way to Google.
+Your dream text is routed to Google through Firebase AI Logic, authorised by
+an anonymous Firebase identifier rather than a personal account. No API key
+is stored in the app, and the request is not tied to your name on our side.
+Data is encrypted in transit (TLS / HTTPS) on its way to Google.
 
 ## 4. Legal bases (GDPR / UK GDPR / Romanian Law 190/2018)
 
@@ -120,9 +140,11 @@ practice, is none — we do not store user content).
 
 You have the right to:
 
-- Access — but there is nothing on our side to access; your content lives
-  only on your device.
-- Erasure — use **Settings → Clear dream history**, or uninstall.
+- Access — your dream content lives on your device. If you are a Pro user who
+  has enabled cloud backup, a copy also lives in your private area of Google
+  Cloud Firestore, accessible only with your signed-in account.
+- Erasure — use **Settings → Clear dream history**, or uninstall. Pro users
+  can also remove the cloud copy by clearing history while signed in.
 - Object / withdraw consent — stop using the Interpret feature.
 - Lodge a complaint with your local data protection authority.
 
@@ -132,11 +154,13 @@ For anything else, email **liviustefan.petroaia@gmail.com**.
 
 - Local Hive boxes are encrypted with AES-256 using a random key generated
   on first launch and held in platform secure storage.
-- All network traffic to Google Gemini uses HTTPS.
+- All network traffic to Google (Gemini and Firebase) uses HTTPS.
+- Interpretation requests carry no embedded API key; they are routed through
+  Firebase AI Logic and verified by Firebase App Check.
 - The Android build uses Android's network security config to block
   cleartext traffic and disables device/cloud backup of app data.
-- The web build is delivered with a strict Content-Security-Policy that
-  only permits requests to the Gemini endpoint and self-hosted assets.
+- The app only ever contacts Google's Firebase / Gemini endpoints,
+  reCAPTCHA (on the Web), and its own self-hosted assets.
 
 ## 8. Changes to this policy
 

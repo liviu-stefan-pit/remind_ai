@@ -1,0 +1,23 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "remind-ai-2555f",
+          "appId": "1:1088490498640:android:36c363ac9d979fb2a83f55",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "remind-ai-2555f",
+          "configurations": {
+            "android": "1:1088490498640:android:36c363ac9d979fb2a83f55",
+            "web": "1:1088490498640:web:a0c11ea65414fc85a83f55",
+            "windows": "1:1088490498640:web:42e788ef936aa399a83f55"
+          }
+        }
+      }
+    }
+  }
+}

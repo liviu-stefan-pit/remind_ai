@@ -105,8 +105,11 @@ an interpretation, as described in the [Privacy Policy](PRIVACY_POLICY.md).
 
 The app relies on third-party services governed by their own terms, including:
 
-- **Google Gemini API** — https://ai.google.dev/gemini-api/terms
-- For Pro: **Google Firebase / Firestore**, **Google Play Billing**,
+- **Google Gemini API**, reached via **Firebase AI Logic**, with **Firebase
+  App Check** (reCAPTCHA on the Web) and anonymous **Firebase Authentication**
+  used to secure requests — https://ai.google.dev/gemini-api/terms and
+  https://firebase.google.com/terms
+- For Pro: **Google Cloud Firestore**, **Google Play Billing**,
   **RevenueCat**, and **Stripe**.
 
 Your use of those features is also subject to the respective provider's terms.

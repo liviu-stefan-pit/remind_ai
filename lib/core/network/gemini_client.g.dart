@@ -48,4 +48,4 @@ final class GeminiClientProvider
   }
 }
 
-String _$geminiClientHash() => r'b3ebb6cf7703b1d5d7a050a3e032ae5ab912c52a';
+String _$geminiClientHash() => r'a2768a46d2377a794c3ba75a691dad98396602d9';

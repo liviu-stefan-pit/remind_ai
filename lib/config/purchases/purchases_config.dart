@@ -28,4 +28,10 @@ abstract final class PurchasesConfig {
   static bool get hasAndroidKey => androidApiKey.isNotEmpty;
   static bool get hasWebKey => webApiKey.isNotEmpty;
   static bool get hasWebPurchaseLink => webPurchaseLink.isNotEmpty;
+
+  /// Whether the Pro tier can currently be purchased on any platform. Stays
+  /// false until RevenueCat keys are supplied at build time, so the Phase-1
+  /// launch ships Free-only and surfaces Pro as "coming soon".
+  static bool get proPurchasable =>
+      hasAndroidKey || hasWebKey || hasWebPurchaseLink;
 }

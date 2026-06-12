@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remind_ai/config/access_tier/access_tier_logic.dart';
+import 'package:remind_ai/config/purchases/purchases_config.dart';
 import 'package:remind_ai/constants/app_strings.dart';
 import 'package:remind_ai/core/errors/app_exception.dart';
 import 'package:remind_ai/design/background/quiet_sky.dart';
@@ -197,7 +198,10 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    '${AppStrings.upgradeToPro} ${_StyleTile.labelFor(style)}.',
+                    PurchasesConfig.proPurchasable
+                        ? '${AppStrings.upgradeToPro} '
+                            '${_StyleTile.labelFor(style)}.'
+                        : AppStrings.proComingSoonStyle,
                   ),
                 ),
               );

@@ -126,6 +126,28 @@ class PurchasesService {
     ).toString();
   }
 
+  /// URL where the user can manage or cancel their subscription. On web/Android
+  /// the RevenueCat SDK resolves the platform-appropriate page (Stripe/Web
+  /// Billing portal or the Play subscription center); on Windows it comes from
+  /// the REST subscriber record. Returns null if it can't be resolved.
+  Future<String?> managementUrl(String firebaseUid) async {
+    if (supportsSdk && _configured) {
+      try {
+        return (await Purchases.getCustomerInfo()).managementURL;
+      } on Object {
+        return null;
+      }
+    }
+    try {
+      final status = await _ref
+          .read(revenueCatRestClientProvider)
+          .fetchEntitlement(firebaseUid);
+      return status.managementUrl;
+    } on Object {
+      return null;
+    }
+  }
+
   /// REST entitlement check (Windows + fallback). Returns whether Pro is active.
   Future<bool> refreshViaRest(String firebaseUid) async {
     final status = await _ref

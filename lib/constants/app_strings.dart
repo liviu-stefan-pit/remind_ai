@@ -90,7 +90,18 @@ abstract final class AppStrings {
   static const String upgradeCta = 'Upgrade to Pro — \$1.99/month';
   static const String proPitchTitle = 'Go Pro';
   static const String proPitchPrice = '\$1.99 / month';
+  static const String proComingSoon = 'Pro is coming soon';
+  static const String proComingSoonNotice =
+      'Advanced styles, unlimited readings, cloud backup, and the insights '
+      'dashboard are on the way. The app is fully usable on the free tier '
+      'in the meantime.';
+  static const String proComingSoonStyle = 'This Pro style is coming soon.';
   static const String renewsOn = 'Renews on';
+  static const String manageSubscription = 'Manage subscription';
+  static const String manageSubscriptionHint =
+      'Cancel or change your subscription anytime through the billing portal.';
+  static const String manageUnavailable =
+      "Couldn't open subscription management. Please try again later.";
   static const String stillNotPro =
       'No active subscription found yet. Try again in a moment.';
   static const String purchaseNotConfigured =
@@ -137,9 +148,10 @@ abstract final class AppStrings {
 }
 
 abstract final class AppUrls {
-  // NOTE: these must be LIVE before any store submission. Host PRIVACY_POLICY.md
-  // (e.g. GitHub Pages / Vercel static page) at these exact URLs, or update
-  // them here and in STORE_METADATA.md. See PUBLISH_NEXT_STEPS.md step 3.
+  // NOTE: these must be LIVE before any store submission. The privacy/ and
+  // terms/ HTML pages are hosted on GitHub Pages at these exact URLs; update
+  // them here and in STORE_METADATA.md if the host changes. See Part A of
+  // PUBLISH_NEXT_STEPS.md ("Host the privacy policy AND terms of service").
   static const String privacyPolicy =
       'https://liviu-stefan-pit.github.io/remind_ai/privacy/';
   static const String termsOfService =
