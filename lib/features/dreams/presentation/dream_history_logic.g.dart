@@ -41,7 +41,7 @@ final class DreamHistoryLogicProvider
   }
 }
 
-String _$dreamHistoryLogicHash() => r'a4ad1906fffd4db52bee2f6b070eb577763a2a14';
+String _$dreamHistoryLogicHash() => r'b44f047ee744962618daf2442a6abc78728c0099';
 
 abstract class _$DreamHistoryLogic extends $Notifier<List<DreamEntry>> {
   List<DreamEntry> build();

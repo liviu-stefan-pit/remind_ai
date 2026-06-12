@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart' show PlatformException;
-import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:remind_ai/config/access_tier/access_tier_logic.dart';
 import 'package:remind_ai/config/purchases/purchases_config.dart';
 import 'package:remind_ai/core/errors/app_exception.dart';
@@ -20,70 +18,29 @@ PurchasesService purchasesService(Ref ref) {
 
 /// Bridges RevenueCat to [AccessTierLogic].
 ///
-/// On platforms with a native/web SDK (Android, Web) it configures the SDK,
-/// listens for entitlement changes, and runs purchases directly. On Windows
-/// (no SDK) it opens a browser purchase link and resolves entitlement through
-/// the REST client instead.
+/// Phase 1 ships without the RevenueCat Flutter SDK on web — its web plugin
+/// injects inline scripts that break under a strict CSP before Pro is enabled.
+/// Entitlement checks fall back to the REST client (Windows / future web Pro).
+/// Re-add `purchases_flutter` to pubspec when enabling native/web checkout.
 class PurchasesService {
   PurchasesService(this._ref);
 
   final Ref _ref;
-  bool _configured = false;
 
-  bool get supportsSdk =>
-      kIsWeb ||
-      defaultTargetPlatform == TargetPlatform.android ||
-      defaultTargetPlatform == TargetPlatform.iOS ||
-      defaultTargetPlatform == TargetPlatform.macOS;
+  /// Native/web SDK checkout is disabled until `purchases_flutter` is wired back.
+  bool get supportsSdk => false;
 
-  String? get _apiKey {
-    if (kIsWeb) {
-      return PurchasesConfig.hasWebKey ? PurchasesConfig.webApiKey : null;
-    }
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return PurchasesConfig.hasAndroidKey ? PurchasesConfig.androidApiKey : null;
-    }
-    return null;
-  }
-
-  Future<void> configure() async {
-    if (_configured || !supportsSdk) return;
-    final key = _apiKey;
-    if (key == null) return;
-    try {
-      await Purchases.configure(PurchasesConfiguration(key));
-      Purchases.addCustomerInfoUpdateListener(_applyCustomerInfo);
-      _configured = true;
-      await _refreshFromSdk();
-    } catch (error) {
-      debugPrint('RevenueCat: configure failed ($error).');
-    }
-  }
+  Future<void> configure() async {}
 
   /// Aligns the RevenueCat identity with the signed-in Firebase user and
   /// refreshes the entitlement.
   Future<void> onSignIn(String firebaseUid) async {
-    if (supportsSdk && _configured) {
-      try {
-        final result = await Purchases.logIn(firebaseUid);
-        _applyCustomerInfo(result.customerInfo);
-      } catch (error) {
-        debugPrint('RevenueCat: logIn failed ($error).');
-      }
-    } else {
-      // Windows / unconfigured: resolve via REST.
+    if (_hasRestKey) {
       await refreshViaRest(firebaseUid);
     }
   }
 
   Future<void> onSignOut() async {
-    if (supportsSdk && _configured) {
-      try {
-        await Purchases.logOut();
-      } catch (_) {
-        // Anonymous logout can throw if already anonymous; ignore.
-      }
-    }
     _ref.read(accessTierLogicProvider.notifier).applyEntitlement(
       isActive: false,
     );
@@ -92,28 +49,9 @@ class PurchasesService {
   /// Starts the native/web purchase flow. Throws [PurchaseException] when the
   /// SDK is unavailable (use [webPurchaseUrl] on Windows instead).
   Future<void> purchasePro() async {
-    if (!supportsSdk || !_configured) {
-      throw const PurchaseException(
-        'In-app purchase is not available on this platform.',
-      );
-    }
-    try {
-      final offerings = await Purchases.getOfferings();
-      final current = offerings.current;
-      final package =
-          current?.monthly ?? current?.availablePackages.firstOrNull;
-      if (package == null) {
-        throw const PurchaseException('No Pro offering is available.');
-      }
-      final result = await Purchases.purchasePackage(package);
-      _applyCustomerInfo(result.customerInfo);
-    } on PlatformException catch (e) {
-      final code = PurchasesErrorHelper.getErrorCode(e);
-      if (code == PurchasesErrorCode.purchaseCancelledError) {
-        return; // user backed out — not an error
-      }
-      throw PurchaseException('Purchase failed: ${e.message ?? code.name}');
-    }
+    throw const PurchaseException(
+      'In-app purchase is not available in this build.',
+    );
   }
 
   /// The browser checkout URL used on Windows, with the Firebase UID attached
@@ -126,18 +64,9 @@ class PurchasesService {
     ).toString();
   }
 
-  /// URL where the user can manage or cancel their subscription. On web/Android
-  /// the RevenueCat SDK resolves the platform-appropriate page (Stripe/Web
-  /// Billing portal or the Play subscription center); on Windows it comes from
-  /// the REST subscriber record. Returns null if it can't be resolved.
+  /// URL where the user can manage or cancel their subscription.
   Future<String?> managementUrl(String firebaseUid) async {
-    if (supportsSdk && _configured) {
-      try {
-        return (await Purchases.getCustomerInfo()).managementURL;
-      } on Object {
-        return null;
-      }
-    }
+    if (!_hasRestKey) return null;
     try {
       final status = await _ref
           .read(revenueCatRestClientProvider)
@@ -160,22 +89,6 @@ class PurchasesService {
     return status.isActive;
   }
 
-  Future<void> _refreshFromSdk() async {
-    try {
-      _applyCustomerInfo(await Purchases.getCustomerInfo());
-    } catch (error) {
-      debugPrint('RevenueCat: getCustomerInfo failed ($error).');
-    }
-  }
-
-  void _applyCustomerInfo(CustomerInfo info) {
-    final entitlement = info.entitlements.all[PurchasesConfig.entitlementId];
-    final isActive = entitlement?.isActive ?? false;
-    final rawExpiry = entitlement?.expirationDate;
-    final expiry = rawExpiry != null ? DateTime.tryParse(rawExpiry) : null;
-    _ref.read(accessTierLogicProvider.notifier).applyEntitlement(
-      isActive: isActive,
-      expiry: expiry,
-    );
-  }
+  bool get _hasRestKey =>
+      PurchasesConfig.hasWebKey || PurchasesConfig.hasAndroidKey;
 }
