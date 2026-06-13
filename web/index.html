@@ -53,5 +53,29 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Detect when a new Flutter service worker is waiting and reload
+    // automatically so users always get the latest build without a manual
+    // hard-refresh. The SW hash changes on every Vercel deployment, so this
+    // fires whenever new code is deployed.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (!reg) return;
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New SW is installed and waiting — tell it to take over immediately.
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      });
+    }
+  </script>
 </body>
 </html>
