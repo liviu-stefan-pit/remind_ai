@@ -1,62 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <script>
 (function () {
-  var RELOAD_KEY = 'remind_ai_sw_reload';
+  'use strict';
+  // Replaced per deploy in scripts/vercel-build.sh — changing this forces one
+  // unregister + cache clear + reload so phones stuck on an old Flutter SW /
+  // HTTP cache pick up the latest bundle without a manual hard reload.
+  var BUILD_ID = '__BUILD_ID__';
+  var RELOAD_KEY = 'remind_ai_web_cache_clear';
 
-  if (sessionStorage.getItem(RELOAD_KEY) === '1') {
-    sessionStorage.removeItem(RELOAD_KEY);
+  if (sessionStorage.getItem(RELOAD_KEY) === BUILD_ID) {
     return;
   }
 
-  if (!('serviceWorker' in navigator)) {
-    return;
-  }
-
-  function nudgeWaitingWorker(reg) {
-    if (reg.waiting) {
-      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+  function unregisterServiceWorkers() {
+    if (!('serviceWorker' in navigator)) {
+      return Promise.resolve();
     }
-    reg.addEventListener('updatefound', function () {
-      var worker = reg.installing;
-      if (!worker) return;
-      worker.addEventListener('statechange', function () {
-        if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-          worker.postMessage({ type: 'SKIP_WAITING' });
-        }
-      });
+    return navigator.serviceWorker.getRegistrations().then(function (regs) {
+      return Promise.all(regs.map(function (reg) {
+        return reg.unregister();
+      }));
     });
   }
 
-  navigator.serviceWorker.getRegistrations().then(function (regs) {
-    if (regs.length === 0) {
-      if ('caches' in window) {
-        return caches.keys().then(function (names) {
-          return Promise.all(names.map(function (n) { return caches.delete(n); }));
-        });
-      }
-      return;
+  function clearCacheStorage() {
+    if (!('caches' in window)) {
+      return Promise.resolve();
     }
-
-    regs.forEach(function (reg) {
-      nudgeWaitingWorker(reg);
-      reg.update();
+    return caches.keys().then(function (keys) {
+      return Promise.all(keys.map(function (key) {
+        return caches.delete(key);
+      }));
     });
+  }
 
-    return navigator.serviceWorker
-      .register('flutter_service_worker.js')
-      .then(function (reg) {
-        nudgeWaitingWorker(reg);
-        return reg.update();
-      });
-  }).then(function () {
-    if (navigator.serviceWorker.controller) {
-      sessionStorage.setItem(RELOAD_KEY, '1');
-    }
-  }).catch(function (err) {
-    console.warn('SW migration:', err);
-  });
+  unregisterServiceWorkers()
+    .then(clearCacheStorage)
+    .then(function () {
+      sessionStorage.setItem(RELOAD_KEY, BUILD_ID);
+      window.location.reload();
+    })
+    .catch(function (err) {
+      console.warn('REMind-Ai cache clear:', err);
+      sessionStorage.setItem(RELOAD_KEY, BUILD_ID);
+    });
 })();
   </script>
   <!--

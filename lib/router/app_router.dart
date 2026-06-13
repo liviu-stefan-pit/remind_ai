@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:remind_ai/core/services/firebase_service.dart';
 import 'package:remind_ai/features/auth/presentation/sign_in_screen.dart';
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
 import 'package:remind_ai/features/dreams/presentation/dream_input_screen.dart';
@@ -66,18 +67,25 @@ GoRouter appRouter(Ref ref) {
     initialLocation: AppRoute.splash.route,
     refreshListenable: notifier,
     redirect: (context, state) {
-      final authState = ref.read(authLogicProvider);
+      final firebaseReady = ref.read(firebaseReadyProvider);
+      if (!firebaseReady) return null;
 
-      // While auth is resolving, don't redirect.
-      if (authState.isLoading) return null;
+      final authState = ref.read(authLogicProvider);
+      final location = state.matchedLocation;
+
+      // Hold on splash until Firebase auth resolves — avoids a flash of home /
+      // history backed by stale local data on slow mobile networks.
+      if (authState.isLoading) {
+        return location == AppRoute.splash.route ? null : AppRoute.splash.route;
+      }
 
       final isAuthenticated = authState.asData?.value != null;
-      final isPublic = _kPublicRoutes.contains(state.matchedLocation);
+      final isPublic = _kPublicRoutes.contains(location);
 
       if (!isAuthenticated && !isPublic) {
         return AppRoute.signIn.route;
       }
-      if (isAuthenticated && state.matchedLocation == AppRoute.signIn.route) {
+      if (isAuthenticated && location == AppRoute.signIn.route) {
         return AppRoute.home.route;
       }
       return null;

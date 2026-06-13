@@ -19,9 +19,16 @@ export PATH="${PATH}:${FLUTTER_DIR}/bin"
 flutter --version
 flutter pub get
 flutter build web --release --pwa-strategy=none
+
+# Killer SW for browsers that still have an old Flutter caching worker.
 cp web/sw_migration.js build/web/flutter_service_worker.js
 
-echo "==> Build complete"
+# Per-deploy cache bust: inline script in index.html clears SW + Cache API once.
+BUILD_ID="${VERCEL_GIT_COMMIT_SHA:-$(date +%s)}"
+sed -i.bak "s/__BUILD_ID__/${BUILD_ID}/g" build/web/index.html
+rm -f build/web/index.html.bak
+
+echo "==> Build complete (BUILD_ID=${BUILD_ID})"
 test -f build/web/index.html
 test -f build/web/main.dart.js
 test -f build/web/flutter_service_worker.js

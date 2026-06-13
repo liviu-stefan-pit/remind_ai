@@ -1,6 +1,8 @@
 import 'package:remind_ai/core/services/cloud_deletion.dart';
+import 'package:remind_ai/core/services/firebase_service.dart';
 import 'package:remind_ai/features/dreams/data/datasources/dream_local_datasource.dart';
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
+import 'package:remind_ai/features/profile/presentation/auth_logic.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'dream_history_logic.g.dart';
@@ -9,6 +11,11 @@ part 'dream_history_logic.g.dart';
 class DreamHistoryLogic extends _$DreamHistoryLogic {
   @override
   List<DreamEntry> build() {
+    final firebaseReady = ref.watch(firebaseReadyProvider);
+    if (firebaseReady && ref.watch(authLogicProvider).value == null) {
+      return [];
+    }
+
     final entries = ref.read(dreamLocalDatasourceProvider).getAll();
     return [...entries]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }

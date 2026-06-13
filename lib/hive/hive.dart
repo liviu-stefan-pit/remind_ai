@@ -20,7 +20,7 @@ const kDreamsBox = 'dreams';
 ///     `hive_adapters.g.yaml`); never reorder or reuse field indexes.
 ///   - Never reorder `DreamStyle` enum values (byte index is persisted).
 ///   - Never reuse a `typeId`.
-const _kSchemaVersion = 1;
+const _kSchemaVersion = 2;
 const _kSchemaVersionKey = 'schemaVersion';
 
 const _kSecureStorage = FlutterSecureStorage(
@@ -52,9 +52,14 @@ Future<void> _runMigrations(Box<String> prefs) async {
   final stored = int.tryParse(prefs.get(_kSchemaVersionKey) ?? '') ?? 0;
   if (stored == _kSchemaVersion) return;
 
-  // Migration steps run in order, e.g.:
-  //   if (stored < 2) { ...migrate v1 -> v2... }
-  // No migrations are needed yet (v0/v1 are compatible).
+  if (stored < 2) {
+    // Login is now required when Firebase is configured. Wipe pre-auth local
+    // dream history so a cached old web build cannot show dreams without
+    // signing in.
+    if (Hive.isBoxOpen(kDreamsBox)) {
+      await Hive.box<DreamEntry>(kDreamsBox).clear();
+    }
+  }
 
   await prefs.put(_kSchemaVersionKey, _kSchemaVersion.toString());
 }

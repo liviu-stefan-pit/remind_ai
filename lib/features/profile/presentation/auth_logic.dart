@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:remind_ai/constants/app_strings.dart';
 import 'package:remind_ai/core/services/firebase_service.dart';
+import 'package:remind_ai/core/services/local_dream_storage.dart';
 import 'package:remind_ai/core/services/purchases_service.dart';
+import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart';
 import 'package:remind_ai/features/profile/data/auth_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -54,9 +56,20 @@ class AuthLogic extends _$AuthLogic {
   void _handleUser(User? user) {
     // Defer so authStateChanges() can emit during [build] without mutating
     // accessTierLogicProvider (Riverpod forbids cross-provider writes in build).
-    Future.microtask(() {
+    Future.microtask(() async {
       if (!ref.mounted) return;
-      state = AsyncData(_visible(user));
+
+      final wasSignedIn = state.asData?.value != null;
+      final visible = _visible(user);
+      state = AsyncData(visible);
+
+      if (wasSignedIn &&
+          visible == null &&
+          ref.read(firebaseReadyProvider)) {
+        await clearLocalDreams();
+        ref.invalidate(dreamHistoryLogicProvider);
+      }
+
       _syncPurchases(user);
     });
   }
