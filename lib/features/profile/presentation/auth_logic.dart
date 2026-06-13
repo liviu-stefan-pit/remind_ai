@@ -67,16 +67,18 @@ class AuthLogic extends _$AuthLogic {
       await repo.signInWithGoogle();
       return repo.currentUser;
     });
+    // User closed the popup without signing in — treat as a silent cancellation
+    // rather than an error so no error UI is shown.
+    if (state case AsyncError(:final error)) {
+      if (error is FirebaseAuthException &&
+          (error.code == 'popup-closed-by-user' ||
+              error.code == 'cancelled-popup-request')) {
+        state = const AsyncData(null);
+      }
+    }
   }
 
   Future<void> signOut() async {
     await ref.read(authRepositoryProvider).signOut();
-    // Re-establish an anonymous session so Firebase AI Logic keeps working
-    // for the free tier after the user signs out of their Google account.
-    try {
-      await FirebaseAuth.instance.signInAnonymously();
-    } on Object catch (_) {
-      // Non-fatal; interpretation surfaces a network error if it can't auth.
-    }
   }
 }

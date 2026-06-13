@@ -50,7 +50,7 @@ final class AuthLogicProvider
   }
 }
 
-String _$authLogicHash() => r'48082df70092bf9fa8d4dc139e77469ffccac659';
+String _$authLogicHash() => r'b75851dda926855418d09be0da6d90cd2899681f';
 
 /// Holds the current Firebase [User] and reacts to auth changes by syncing the
 /// RevenueCat identity / entitlement. Stays inert (always signed-out) when

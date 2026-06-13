@@ -59,7 +59,7 @@ final class AccessTierLogicProvider
   }
 }
 
-String _$accessTierLogicHash() => r'0d1070b82055ba04a533f50aea7e2a08bb169e49';
+String _$accessTierLogicHash() => r'e28376814937aeae17dcf0080ab13f8adb751894';
 
 /// Single source of truth for the user's tier, consumed by every UI gate.
 ///

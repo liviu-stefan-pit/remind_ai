@@ -1,5 +1,4 @@
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:remind_ai/firebase_options.dart';
@@ -50,7 +49,6 @@ Future<bool> initFirebase() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     await _activateAppCheck();
-    await _ensureSignedIn();
     return true;
   } catch (error, stackTrace) {
     debugPrint('Firebase: initialization failed ($error).');
@@ -71,22 +69,11 @@ Future<void> _activateAppCheck() async {
       // ignore: deprecated_member_use
       webProvider: ReCaptchaV3Provider(_kRecaptchaSiteKey),
       // ignore: deprecated_member_use
-      androidProvider:
-          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      androidProvider: kDebugMode
+          ? AndroidProvider.debug
+          : AndroidProvider.playIntegrity,
     );
   } catch (error) {
     debugPrint('App Check: activation failed ($error).');
-  }
-}
-
-/// Firebase AI Logic requires an authenticated caller. Free users get an
-/// anonymous session; a Google sign-in later replaces it. Non-fatal.
-Future<void> _ensureSignedIn() async {
-  try {
-    if (FirebaseAuth.instance.currentUser == null) {
-      await FirebaseAuth.instance.signInAnonymously();
-    }
-  } catch (error) {
-    debugPrint('Auth: anonymous sign-in failed ($error).');
   }
 }

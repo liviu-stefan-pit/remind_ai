@@ -51,9 +51,14 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
   Widget build(BuildContext context) {
     final isPro = ref.watch(accessTierLogicProvider).tier.isPro;
     final tier = ref.watch(accessTierLogicProvider).tier;
-    final quota = ref.watch(usageQuotaServiceProvider);
     final dailyLimit = UsageQuotaService.dailyLimitFor(tier);
-    final remaining = quota.remainingToday(tier);
+    final remaining = ref
+        .watch(quotaRemainingProvider)
+        .maybeWhen(
+          data: (v) => v,
+          orElse: () =>
+              ref.read(usageQuotaServiceProvider).remainingToday(tier),
+        );
     final submitState = ref.watch(submitDreamLogicProvider);
     final isLoading = submitState is AsyncLoading;
     final aurora = context.auroraTheme;
@@ -69,15 +74,16 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
         error: (error, _) {
           final message = switch (error) {
             DailyLimitException() => AppStrings.dailyLimitReached,
-            ProRequiredException() => PurchasesConfig.proPurchasable
-                ? AppStrings.proRequired
-                : AppStrings.proRequiredComingSoon,
+            ProRequiredException() =>
+              PurchasesConfig.proPurchasable
+                  ? AppStrings.proRequired
+                  : AppStrings.proRequiredComingSoon,
             RateLimitException() => AppStrings.rateLimited,
             _ => AppStrings.unexpectedError,
           };
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
+          final messenger = ScaffoldMessenger.of(context);
+          messenger.clearSnackBars();
+          messenger.showSnackBar(SnackBar(content: Text(message)));
         },
       );
     });
@@ -91,8 +97,7 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
             key: _formKey,
             child: Center(
               child: ConstrainedBox(
-                constraints:
-                    BoxConstraints(maxWidth: context.maxContentWidth),
+                constraints: BoxConstraints(maxWidth: context.maxContentWidth),
                 child: SingleChildScrollView(
                   padding: context.contentPadding.add(
                     const EdgeInsets.symmetric(vertical: AppSpacing.lg),
@@ -117,47 +122,47 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
                           ): _submit,
                         },
                         child: GlassField(
-                        focused: _focusNode.hasFocus,
-                        child: TextFormField(
-                          controller: _controller,
-                          focusNode: _focusNode,
-                          autofocus: _autofocusInput(context),
-                          minLines: 6,
-                          maxLines: 14,
-                          maxLength: AppStrings.dreamMaxChars,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(
-                              AppStrings.dreamMaxChars,
+                          focused: _focusNode.hasFocus,
+                          child: TextFormField(
+                            controller: _controller,
+                            focusNode: _focusNode,
+                            autofocus: _autofocusInput(context),
+                            minLines: 6,
+                            maxLines: 14,
+                            maxLength: AppStrings.dreamMaxChars,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(
+                                AppStrings.dreamMaxChars,
+                              ),
+                            ],
+                            textInputAction: TextInputAction.newline,
+                            style: AppTypography.serifBody(
+                              context.colorScheme.onSurface,
+                              size: 16,
                             ),
-                          ],
-                          textInputAction: TextInputAction.newline,
-                          style: AppTypography.serifBody(
-                            context.colorScheme.onSurface,
-                            size: 16,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: AppStrings.describeDreamHint,
-                            filled: true,
-                            fillColor: Colors.transparent,
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            hintStyle: TextStyle(
-                              color: aurora.textDim,
-                              fontStyle: FontStyle.italic,
+                            decoration: InputDecoration(
+                              hintText: AppStrings.describeDreamHint,
+                              filled: true,
+                              fillColor: Colors.transparent,
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              hintStyle: TextStyle(
+                                color: aurora.textDim,
+                                fontStyle: FontStyle.italic,
+                              ),
                             ),
+                            validator: (value) {
+                              final trimmed = value?.trim() ?? '';
+                              if (trimmed.length < 20) {
+                                return AppStrings.minCharsError;
+                              }
+                              if (trimmed.length > AppStrings.dreamMaxChars) {
+                                return AppStrings.maxCharsError;
+                              }
+                              return null;
+                            },
                           ),
-                          validator: (value) {
-                            final trimmed = value?.trim() ?? '';
-                            if (trimmed.length < 20) {
-                              return AppStrings.minCharsError;
-                            }
-                            if (trimmed.length > AppStrings.dreamMaxChars) {
-                              return AppStrings.maxCharsError;
-                            }
-                            return null;
-                          },
-                        ),
                         ),
                       ).animateRise(
                         key: const ValueKey('input-field'),
@@ -172,7 +177,10 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
                       _buildStyleGrid(isPro: isPro),
                       const Gap(AppSpacing.xl),
                       Text(
-                        AppStrings.readingsRemainingToday(remaining, dailyLimit),
+                        AppStrings.readingsRemainingToday(
+                          remaining,
+                          dailyLimit,
+                        ),
                         style: context.textTheme.bodySmall?.copyWith(
                           color: aurora.textDim,
                         ),
@@ -213,26 +221,28 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
   Widget _buildStyleGrid({required bool isPro}) {
     bool isLocked(DreamStyle s) => !isPro && s.isPro;
     Widget card(DreamStyle style) => _StyleTile(
-          style: style,
-          isSelected: _selectedStyle == style,
-          isLocked: isLocked(style),
-          onTap: () {
-            if (isLocked(style)) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    PurchasesConfig.proPurchasable
-                        ? '${AppStrings.upgradeToPro} '
-                            '${_StyleTile.labelFor(style)}.'
-                        : AppStrings.proComingSoonStyle,
-                  ),
-                ),
-              );
-            } else {
-              setState(() => _selectedStyle = style);
-            }
-          },
-        );
+      style: style,
+      isSelected: _selectedStyle == style,
+      isLocked: isLocked(style),
+      onTap: () {
+        if (isLocked(style)) {
+          final messenger = ScaffoldMessenger.of(context);
+          messenger.clearSnackBars();
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                PurchasesConfig.proPurchasable
+                    ? '${AppStrings.upgradeToPro} '
+                          '${_StyleTile.labelFor(style)}.'
+                    : AppStrings.proComingSoonStyle,
+              ),
+            ),
+          );
+        } else {
+          setState(() => _selectedStyle = style);
+        }
+      },
+    );
 
     const styles = DreamStyle.values;
 
@@ -272,10 +282,9 @@ class _DreamInputScreenState extends ConsumerState<DreamInputScreen> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    ref.read(submitDreamLogicProvider.notifier).submit(
-          dreamText: _controller.text.trim(),
-          style: _selectedStyle,
-        );
+    ref
+        .read(submitDreamLogicProvider.notifier)
+        .submit(dreamText: _controller.text.trim(), style: _selectedStyle);
   }
 }
 
@@ -293,25 +302,25 @@ class _StyleTile extends StatefulWidget {
   final VoidCallback onTap;
 
   static IconData _iconFor(DreamStyle s) => switch (s) {
-        DreamStyle.standard => Icons.book_outlined,
-        DreamStyle.psychological => Icons.psychology_outlined,
-        DreamStyle.mythic => Icons.auto_awesome_outlined,
-        DreamStyle.creative => Icons.edit_outlined,
-      };
+    DreamStyle.standard => Icons.book_outlined,
+    DreamStyle.psychological => Icons.psychology_outlined,
+    DreamStyle.mythic => Icons.auto_awesome_outlined,
+    DreamStyle.creative => Icons.edit_outlined,
+  };
 
   static String labelFor(DreamStyle s) => switch (s) {
-        DreamStyle.standard => AppStrings.styleStandardName,
-        DreamStyle.psychological => AppStrings.stylePsychologicalName,
-        DreamStyle.mythic => AppStrings.styleMythicName,
-        DreamStyle.creative => AppStrings.styleCreativeName,
-      };
+    DreamStyle.standard => AppStrings.styleStandardName,
+    DreamStyle.psychological => AppStrings.stylePsychologicalName,
+    DreamStyle.mythic => AppStrings.styleMythicName,
+    DreamStyle.creative => AppStrings.styleCreativeName,
+  };
 
   static String descFor(DreamStyle s) => switch (s) {
-        DreamStyle.standard => AppStrings.styleStandardDesc,
-        DreamStyle.psychological => AppStrings.stylePsychologicalDesc,
-        DreamStyle.mythic => AppStrings.styleMythicDesc,
-        DreamStyle.creative => AppStrings.styleCreativeDesc,
-      };
+    DreamStyle.standard => AppStrings.styleStandardDesc,
+    DreamStyle.psychological => AppStrings.stylePsychologicalDesc,
+    DreamStyle.mythic => AppStrings.styleMythicDesc,
+    DreamStyle.creative => AppStrings.styleCreativeDesc,
+  };
 
   @override
   State<_StyleTile> createState() => _StyleTileState();
@@ -343,7 +352,8 @@ class _StyleTileState extends State<_StyleTile> {
       button: true,
       selected: isSelected,
       enabled: !isLocked,
-      label: '${_StyleTile.labelFor(widget.style)}. '
+      label:
+          '${_StyleTile.labelFor(widget.style)}. '
           '${_StyleTile.descFor(widget.style)}'
           '${widget.style.isPro ? ' Pro style.' : ''}',
       child: Tooltip(
@@ -364,26 +374,27 @@ class _StyleTileState extends State<_StyleTile> {
               decoration: BoxDecoration(
                 color: bg,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: borderColor,
-                  width: active ? 1.4 : 1,
-                ),
+                border: Border.all(color: borderColor, width: active ? 1.4 : 1),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(_StyleTile._iconFor(widget.style),
-                          size: 20, color: fg),
+                      Icon(
+                        _StyleTile._iconFor(widget.style),
+                        size: 20,
+                        color: fg,
+                      ),
                       const Gap(AppSpacing.sm),
                       Expanded(
                         child: Text(
                           _StyleTile.labelFor(widget.style),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: context.textTheme.titleSmall
-                              ?.copyWith(color: fg),
+                          style: context.textTheme.titleSmall?.copyWith(
+                            color: fg,
+                          ),
                         ),
                       ),
                       if (widget.style.isPro) _ProBadge(locked: isLocked),

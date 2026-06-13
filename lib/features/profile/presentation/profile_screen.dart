@@ -67,15 +67,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       padding: EdgeInsets.all(AppSpacing.xl),
                       child: Center(child: CircularProgressIndicator()),
                     ),
-                    error: (_, __) => _SignedOut(
-                      onSignIn: _signIn,
-                      enabled: firebaseReady,
-                    ),
+                    error: (_, __) =>
+                        _SignedOut(onSignIn: _signIn, enabled: firebaseReady),
                     data: (user) => user == null
-                        ? _SignedOut(
-                            onSignIn: _signIn,
-                            enabled: firebaseReady,
-                          )
+                        ? _SignedOut(onSignIn: _signIn, enabled: firebaseReady)
                         : _SignedIn(
                             user: user,
                             isPro: isPro,
@@ -109,8 +104,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Expanded(
               child: Text(
                 AppStrings.backendNotConfigured,
-                style: context.textTheme.bodySmall
-                    ?.copyWith(color: aurora.textDim),
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: aurora.textDim,
+                ),
               ),
             ),
           ],
@@ -160,8 +156,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _refresh(User user) async {
     try {
-      final active =
-          await ref.read(purchasesServiceProvider).refreshViaRest(user.uid);
+      final active = await ref
+          .read(purchasesServiceProvider)
+          .refreshViaRest(user.uid);
       if (!active && mounted) _snack(AppStrings.stillNotPro);
     } on AppException catch (e) {
       if (mounted) _snack(e.message);
@@ -187,9 +184,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _snack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -257,15 +254,7 @@ class _SignedIn extends StatelessWidget {
           enableHoverGlow: false,
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 26,
-                backgroundColor: aurora.accent.withValues(alpha: 0.15),
-                backgroundImage:
-                    user.photoURL != null ? NetworkImage(user.photoURL!) : null,
-                child: user.photoURL == null
-                    ? Icon(Icons.person_rounded, color: aurora.accent)
-                    : null,
-              ),
+              _UserAvatar(photoURL: user.photoURL, accentColor: aurora.accent),
               const Gap(AppSpacing.md),
               Expanded(
                 child: Column(
@@ -278,8 +267,9 @@ class _SignedIn extends StatelessWidget {
                     if (user.email != null)
                       Text(
                         user.email!,
-                        style: context.textTheme.bodySmall
-                            ?.copyWith(color: aurora.textDim),
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: aurora.textDim,
+                        ),
                       ),
                   ],
                 ),
@@ -335,7 +325,9 @@ class _ProStatusCard extends ConsumerWidget {
 
   Future<void> _openManagement(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
-    final url = await ref.read(purchasesServiceProvider).managementUrl(user.uid);
+    final url = await ref
+        .read(purchasesServiceProvider)
+        .managementUrl(user.uid);
     if (url == null) {
       messenger.showSnackBar(
         const SnackBar(content: Text(AppStrings.manageUnavailable)),
@@ -373,14 +365,16 @@ class _ProStatusCard extends ConsumerWidget {
                 expiry != null
                     ? '${AppStrings.renewsOn} ${DateFormat.yMMMMd().format(expiry.toLocal())}'
                     : AppStrings.proActiveHint,
-                style:
-                    context.textTheme.bodySmall?.copyWith(color: aurora.textDim),
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: aurora.textDim,
+                ),
               ),
               const Gap(AppSpacing.sm),
               Text(
                 AppStrings.manageSubscriptionHint,
-                style:
-                    context.textTheme.bodySmall?.copyWith(color: aurora.textDim),
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: aurora.textDim,
+                ),
               ),
             ],
           ),
@@ -445,6 +439,38 @@ class _WaitingCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Avatar that shows the user's Google profile photo and falls back to a
+/// person icon gracefully on any network or rate-limit error.
+/// Uses [Image.network] inside a [ClipOval] rather than
+/// [CircleAvatar.backgroundImage] to avoid Flutter web canvas CORS issues.
+class _UserAvatar extends StatelessWidget {
+  const _UserAvatar({required this.photoURL, required this.accentColor});
+
+  final String? photoURL;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = CircleAvatar(
+      radius: 26,
+      backgroundColor: accentColor.withValues(alpha: 0.15),
+      child: Icon(Icons.person_rounded, color: accentColor),
+    );
+
+    if (photoURL == null) return fallback;
+
+    return ClipOval(
+      child: Image.network(
+        photoURL!,
+        width: 52,
+        height: 52,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => fallback,
       ),
     );
   }
@@ -523,7 +549,9 @@ class _ProPitch extends StatelessWidget {
             comingSoon
                 ? AppStrings.proPitchPlannedPrice
                 : AppStrings.proPitchPrice,
-            style: context.textTheme.titleMedium?.copyWith(color: aurora.accent),
+            style: context.textTheme.titleMedium?.copyWith(
+              color: aurora.accent,
+            ),
           ),
           const Gap(AppSpacing.md),
           for (final (icon, title, body) in _features)
@@ -541,8 +569,9 @@ class _ProPitch extends StatelessWidget {
                         Text(title, style: context.textTheme.titleSmall),
                         Text(
                           body,
-                          style: context.textTheme.bodySmall
-                              ?.copyWith(color: aurora.textDim),
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: aurora.textDim,
+                          ),
                         ),
                       ],
                     ),
@@ -583,8 +612,9 @@ class _ComingSoonNotice extends StatelessWidget {
                 const Gap(AppSpacing.xs),
                 Text(
                   AppStrings.proComingSoonNotice,
-                  style: context.textTheme.bodySmall
-                      ?.copyWith(color: aurora.textDim),
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: aurora.textDim,
+                  ),
                 ),
               ],
             ),

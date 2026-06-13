@@ -10,6 +10,7 @@ import 'package:remind_ai/features/dreams/data/datasources/dream_local_datasourc
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
 import 'package:remind_ai/features/dreams/domain/dream_style.dart';
 import 'package:remind_ai/features/dreams/presentation/dream_history_logic.dart';
+import 'package:remind_ai/features/profile/presentation/auth_logic.dart';
 import 'package:remind_ai/utils/id_generator.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -29,6 +30,7 @@ class SubmitDreamLogic extends _$SubmitDreamLogic {
     // Snapshot tier before any await so it can't change mid-flight.
     final tier = ref.read(accessTierLogicProvider).tier;
     final quota = ref.read(usageQuotaServiceProvider);
+    final uid = ref.read(authLogicProvider).asData?.value?.uid;
 
     // Gate: Pro-only styles require an active Pro entitlement. The UI already
     // locks these, but enforce here so the network call can't be triggered by
@@ -44,8 +46,23 @@ class SubmitDreamLogic extends _$SubmitDreamLogic {
       return;
     }
 
-    // Gate: per-tier daily cap (free and Pro both bounded).
-    if (!quota.canSubmit(tier)) {
+    // Guard: uid must be non-null here because the router auth gate blocks
+    // unauthenticated navigation to this screen. A null uid at this point means
+    // the auth state somehow disappeared mid-session — treat it as an auth error
+    // rather than falling back to a bypassable local counter.
+    if (uid == null) {
+      state = AsyncError(
+        const AuthException('Not signed in. Please sign in to continue.'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    // Gate: per-tier daily cap — checked against Firestore (server-side source
+    // of truth) so incognito / cleared-storage sessions cannot bypass the limit.
+    // Falls back to local Hive counter only when Firestore is transiently
+    // unavailable (e.g. offline); permission errors are always a hard deny.
+    if (!await quota.canSubmitFromServer(uid, tier)) {
       state = AsyncError(const DailyLimitException(), StackTrace.current);
       return;
     }
@@ -55,7 +72,9 @@ class SubmitDreamLogic extends _$SubmitDreamLogic {
     await quota.markSubmitAttempt();
 
     state = await AsyncValue.guard(() async {
-      final interpretation = await ref.read(geminiClientProvider).generate(
+      final interpretation = await ref
+          .read(geminiClientProvider)
+          .generate(
             prompt: dreamText,
             systemInstruction: _promptFor(style),
             model: style.model,
@@ -81,6 +100,7 @@ class SubmitDreamLogic extends _$SubmitDreamLogic {
       // Record usage after a successful save so a failed request or write
       // never silently consumes the daily quota. Applies to all tiers.
       await quota.recordUsage();
+      unawaited(quota.recordUsageToServer(uid));
 
       return entry;
     });

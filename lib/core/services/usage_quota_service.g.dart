@@ -55,3 +55,44 @@ final class UsageQuotaServiceProvider
 }
 
 String _$usageQuotaServiceHash() => r'9e649a9832e33ce51b5376baaf139e7bef402dc8';
+
+/// Syncs the quota from Firestore on sign-in and exposes the remaining count
+/// for the current user/tier. Rebuilds whenever auth or tier changes.
+
+@ProviderFor(quotaRemaining)
+final quotaRemainingProvider = QuotaRemainingProvider._();
+
+/// Syncs the quota from Firestore on sign-in and exposes the remaining count
+/// for the current user/tier. Rebuilds whenever auth or tier changes.
+
+final class QuotaRemainingProvider
+    extends $FunctionalProvider<AsyncValue<int>, int, FutureOr<int>>
+    with $FutureModifier<int>, $FutureProvider<int> {
+  /// Syncs the quota from Firestore on sign-in and exposes the remaining count
+  /// for the current user/tier. Rebuilds whenever auth or tier changes.
+  QuotaRemainingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'quotaRemainingProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$quotaRemainingHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<int> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<int> create(Ref ref) {
+    return quotaRemaining(ref);
+  }
+}
+
+String _$quotaRemainingHash() => r'5df1f98597b0d2ae98bed573949a732e42baa413';

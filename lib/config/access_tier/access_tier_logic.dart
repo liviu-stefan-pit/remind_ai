@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:remind_ai/config/access_tier/access_tier.dart';
 import 'package:remind_ai/config/access_tier/access_tier_state.dart';
 import 'package:remind_ai/core/services/entitlement_cache.dart';
@@ -23,15 +24,19 @@ class AccessTierLogic extends _$AccessTierLogic {
   void applyEntitlement({required bool isActive, DateTime? expiry}) {
     final tier = isActive ? AccessTier.pro : AccessTier.free;
     state = state.copyWith(tier: tier, expiry: isActive ? expiry : null);
-    ref.read(entitlementCacheProvider).write(
-      tier: tier,
-      expiry: isActive ? expiry : null,
-    );
+    ref
+        .read(entitlementCacheProvider)
+        .write(tier: tier, expiry: isActive ? expiry : null);
   }
 
   void setTier(AccessTier tier, {DateTime? expiry}) =>
       applyEntitlement(isActive: tier.isPro, expiry: expiry);
 
   /// Dev/test helper to flip the tier without a real purchase.
-  void toggle() => setTier(state.tier.isPro ? AccessTier.free : AccessTier.pro);
+  /// Only available in debug builds — stripped from release/profile builds.
+  void toggle() {
+    assert(kDebugMode, 'toggle() must not be called in release builds.');
+    if (!kDebugMode) return;
+    setTier(state.tier.isPro ? AccessTier.free : AccessTier.pro);
+  }
 }

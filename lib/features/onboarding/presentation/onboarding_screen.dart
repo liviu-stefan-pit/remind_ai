@@ -67,8 +67,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints:
-                  BoxConstraints(maxWidth: context.maxContentWidth),
+              constraints: BoxConstraints(maxWidth: context.maxContentWidth),
               child: Padding(
                 padding: context.contentPadding,
                 child: Column(
@@ -85,11 +84,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                p.icon,
-                                size: 56,
-                                color: aurora.accent,
-                              ),
+                              Icon(p.icon, size: 56, color: aurora.accent),
                               const Gap(AppSpacing.xl),
                               Text(
                                 p.kicker,
@@ -125,8 +120,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         (i) => AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           curve: Curves.easeOutCubic,
-                          margin:
-                              const EdgeInsets.symmetric(horizontal: 3),
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
                           width: _page == i ? 20 : 6,
                           height: 6,
                           decoration: BoxDecoration(
@@ -213,15 +207,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 ? () {
                                     if (!isLast) {
                                       _pageController.nextPage(
-                                        duration:
-                                            const Duration(milliseconds: 280),
+                                        duration: const Duration(
+                                          milliseconds: 280,
+                                        ),
                                         curve: Curves.easeOutCubic,
                                       );
                                     } else {
                                       ref
                                           .read(settingsLogicProvider.notifier)
                                           .markOnboardingSeen();
-                                      context.go(AppRoute.home.route);
+                                      context.go(AppRoute.signIn.route);
                                     }
                                   }
                                 : null,
