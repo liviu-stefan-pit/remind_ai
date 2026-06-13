@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:remind_ai/config/settings/settings_logic.dart';
 import 'package:remind_ai/core/services/firebase_service.dart';
 import 'package:remind_ai/features/auth/presentation/sign_in_screen.dart';
 import 'package:remind_ai/features/dreams/data/models/dream_entry.dart';
@@ -61,6 +62,7 @@ GoRouter appRouter(Ref ref) {
   final notifier = _RouterRefreshListenable();
 
   ref.listen(authLogicProvider, (_, __) => notifier.refresh());
+  ref.listen(settingsLogicProvider, (_, __) => notifier.refresh());
   ref.onDispose(notifier.dispose);
 
   return GoRouter(
@@ -72,11 +74,25 @@ GoRouter appRouter(Ref ref) {
 
       final authState = ref.read(authLogicProvider);
       final location = state.matchedLocation;
+      final onboardingSeen = ref.read(settingsLogicProvider).onboardingSeen;
+
+      // Fresh installs must complete onboarding before sign-in or any app route.
+      if (!onboardingSeen) {
+        final allowed = {AppRoute.splash.route, AppRoute.onboarding.route};
+        if (!allowed.contains(location)) {
+          return AppRoute.onboarding.route;
+        }
+      }
 
       // Hold on splash until Firebase auth resolves — avoids a flash of home /
-      // history backed by stale local data on slow mobile networks.
+      // history backed by stale local data on slow mobile networks. Stay on
+      // sign-in during Google popup so we don't bounce through splash/onboarding.
       if (authState.isLoading) {
-        return location == AppRoute.splash.route ? null : AppRoute.splash.route;
+        if (location == AppRoute.splash.route ||
+            location == AppRoute.signIn.route) {
+          return null;
+        }
+        return AppRoute.splash.route;
       }
 
       final isAuthenticated = authState.asData?.value != null;

@@ -9,6 +9,7 @@ import 'package:remind_ai/design/glass/glass_button.dart';
 import 'package:remind_ai/design/theme/theme_extension.dart';
 import 'package:remind_ai/design/tokens/spacing.dart';
 import 'package:remind_ai/design/tokens/typography.dart';
+import 'package:remind_ai/features/profile/presentation/auth_logic.dart';
 import 'package:remind_ai/router/app_router.dart';
 import 'package:remind_ai/utils/context_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -204,7 +205,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         Expanded(
                           child: GlassButton(
                             onPressed: canFinish
-                                ? () {
+                                ? () async {
                                     if (!isLast) {
                                       _pageController.nextPage(
                                         duration: const Duration(
@@ -213,10 +214,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                         curve: Curves.easeOutCubic,
                                       );
                                     } else {
-                                      ref
+                                      await ref
                                           .read(settingsLogicProvider.notifier)
                                           .markOnboardingSeen();
-                                      context.go(AppRoute.signIn.route);
+                                      if (!context.mounted) return;
+                                      final isAuthenticated = ref
+                                              .read(authLogicProvider)
+                                              .asData
+                                              ?.value !=
+                                          null;
+                                      context.go(
+                                        isAuthenticated
+                                            ? AppRoute.home.route
+                                            : AppRoute.signIn.route,
+                                      );
                                     }
                                   }
                                 : null,
