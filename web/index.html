@@ -1,6 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script>
+(function () {
+  var RELOAD_KEY = 'remind_ai_sw_reload';
+
+  if (sessionStorage.getItem(RELOAD_KEY) === '1') {
+    sessionStorage.removeItem(RELOAD_KEY);
+    return;
+  }
+
+  if (!('serviceWorker' in navigator)) {
+    return;
+  }
+
+  function nudgeWaitingWorker(reg) {
+    if (reg.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+    reg.addEventListener('updatefound', function () {
+      var worker = reg.installing;
+      if (!worker) return;
+      worker.addEventListener('statechange', function () {
+        if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+          worker.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+  }
+
+  navigator.serviceWorker.getRegistrations().then(function (regs) {
+    if (regs.length === 0) {
+      if ('caches' in window) {
+        return caches.keys().then(function (names) {
+          return Promise.all(names.map(function (n) { return caches.delete(n); }));
+        });
+      }
+      return;
+    }
+
+    regs.forEach(function (reg) {
+      nudgeWaitingWorker(reg);
+      reg.update();
+    });
+
+    return navigator.serviceWorker
+      .register('flutter_service_worker.js')
+      .then(function (reg) {
+        nudgeWaitingWorker(reg);
+        return reg.update();
+      });
+  }).then(function () {
+    if (navigator.serviceWorker.controller) {
+      sessionStorage.setItem(RELOAD_KEY, '1');
+    }
+  }).catch(function (err) {
+    console.warn('SW migration:', err);
+  });
+})();
+  </script>
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
@@ -42,23 +100,6 @@
 
   <title>REMind-Ai — AI Dream Interpretation</title>
   <link rel="manifest" href="manifest.json">
-  <script>
-    window.addEventListener('load', async function () {
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        for (const name of cacheNames) {
-          await caches.delete(name);
-        }
-      }
-
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const reg of registrations) {
-          await reg.unregister();
-        }
-      }
-    });
-  </script>
 </head>
 <body>
   <!--
