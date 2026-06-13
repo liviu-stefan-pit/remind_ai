@@ -7,48 +7,13 @@
   <script>
 (function () {
   'use strict';
-  // Replaced per deploy in scripts/vercel-build.sh — changing this forces one
-  // unregister + cache clear + reload so phones stuck on an old Flutter SW /
-  // HTTP cache pick up the latest bundle without a manual hard reload.
-  var BUILD_ID = '__BUILD_ID__';
-  var RELOAD_KEY = 'remind_ai_web_cache_clear';
-
-  if (sessionStorage.getItem(RELOAD_KEY) === BUILD_ID) {
-    return;
-  }
-
-  function unregisterServiceWorkers() {
-    if (!('serviceWorker' in navigator)) {
-      return Promise.resolve();
-    }
-    return navigator.serviceWorker.getRegistrations().then(function (regs) {
-      return Promise.all(regs.map(function (reg) {
-        return reg.unregister();
-      }));
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function (event) {
+      if (event.data && event.data.type === 'FORCE_RELOAD') {
+        window.location.reload();
+      }
     });
   }
-
-  function clearCacheStorage() {
-    if (!('caches' in window)) {
-      return Promise.resolve();
-    }
-    return caches.keys().then(function (keys) {
-      return Promise.all(keys.map(function (key) {
-        return caches.delete(key);
-      }));
-    });
-  }
-
-  unregisterServiceWorkers()
-    .then(clearCacheStorage)
-    .then(function () {
-      sessionStorage.setItem(RELOAD_KEY, BUILD_ID);
-      window.location.reload();
-    })
-    .catch(function (err) {
-      console.warn('REMind-Ai cache clear:', err);
-      sessionStorage.setItem(RELOAD_KEY, BUILD_ID);
-    });
 })();
   </script>
   <!--
@@ -91,17 +56,9 @@
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>REMind-Ai — AI Dream Interpretation</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json?v=__BUILD_ID__">
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter_bootstrap.js?v=__BUILD_ID__" async></script>
 </body>
 </html>

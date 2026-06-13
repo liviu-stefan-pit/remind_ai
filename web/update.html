@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Updating REMind-Ai</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0A0E1A;
+      color: #e8e6f0;
+      font-family: system-ui, sans-serif;
+    }
+  </style>
+  <script>
+(function () {
+  'use strict';
+  var BUILD_ID = '__BUILD_ID__';
+  var RELOAD_KEY = 'remind_ai_web_cache_clear';
+
+  function unregisterServiceWorkers() {
+    if (!('serviceWorker' in navigator)) {
+      return Promise.resolve();
+    }
+    return navigator.serviceWorker.getRegistrations().then(function (regs) {
+      return Promise.all(regs.map(function (reg) {
+        return reg.unregister();
+      }));
+    });
+  }
+
+  function clearCacheStorage() {
+    if (!('caches' in window)) {
+      return Promise.resolve();
+    }
+    return caches.keys().then(function (keys) {
+      return Promise.all(keys.map(function (key) {
+        return caches.delete(key);
+      }));
+    });
+  }
+
+  function goHome() {
+    sessionStorage.setItem(RELOAD_KEY, BUILD_ID);
+    window.location.replace('/?b=' + encodeURIComponent(BUILD_ID));
+  }
+
+  unregisterServiceWorkers()
+    .then(clearCacheStorage)
+    .then(goHome)
+    .catch(function () {
+      goHome();
+    });
+})();
+  </script>
+</head>
+<body>
+  <p>Updating REMind-Ai…</p>
+</body>
+</html>

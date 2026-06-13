@@ -1,9 +1,7 @@
 'use strict';
 
-// Killer SW for installs that still have an old Flutter caching worker.
-// index.html no longer registers a SW; this file is only fetched when an
-// existing worker checks for updates. Bump when killer logic changes.
-const MIGRATION_ID = 'remind-ai-v3-killer';
+// Injected per deploy — must change every release so SW update checks install this worker.
+var BUILD_ID = '__BUILD_ID__';
 
 self.addEventListener('install', function () {
   self.skipWaiting();
@@ -14,6 +12,17 @@ self.addEventListener('message', function (event) {
     self.skipWaiting();
   }
 });
+
+function bustUrl(url) {
+  try {
+    var u = new URL(url);
+    u.searchParams.delete('_cb');
+    u.searchParams.set('_cb', BUILD_ID);
+    return u.toString();
+  } catch (e) {
+    return url;
+  }
+}
 
 self.addEventListener('activate', function (event) {
   event.waitUntil((async function () {
@@ -31,8 +40,18 @@ self.addEventListener('activate', function (event) {
 
     for (var i = 0; i < clients.length; i++) {
       var client = clients[i];
-      if (client.url && 'navigate' in client) {
-        await client.navigate(client.url);
+      if (!client.url) continue;
+      var target = bustUrl(client.url);
+      try {
+        if ('navigate' in client) {
+          await client.navigate(target);
+        } else if ('postMessage' in client) {
+          client.postMessage({ type: 'FORCE_RELOAD' });
+        }
+      } catch (e) {
+        if ('postMessage' in client) {
+          client.postMessage({ type: 'FORCE_RELOAD' });
+        }
       }
     }
   })());

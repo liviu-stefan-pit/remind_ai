@@ -6,7 +6,7 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/((?!_flutter|icons|assets|canvaskit|flutter_bootstrap\\.js|flutter_service_worker\\.js|favicon\\.ico|main\\.dart\\.js|.*\\.js|.*\\.css|.*\\.png|.*\\.jpg|.*\\.wasm|.*\\.json|.*\\.otf|.*\\.ttf).*)",
+      "source": "/((?!_flutter|icons|assets|canvaskit|flutter_bootstrap\\.js|flutter_service_worker\\.js|favicon\\.ico|main\\.dart\\.js|update\\.html|.*\\.js|.*\\.css|.*\\.png|.*\\.jpg|.*\\.wasm|.*\\.json|.*\\.otf|.*\\.ttf).*)",
       "destination": "/index.html"
     }
   ],
@@ -22,7 +22,33 @@
       ]
     },
     {
-      "source": "/(index\\.html|flutter_service_worker\\.js|main\\.dart\\.js|flutter_bootstrap\\.js|version\\.json|manifest\\.json)",
+      "source": "/(.*)\\.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" }
+      ]
+    },
+    {
+      "source": "/flutter_service_worker.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" },
+        { "key": "Clear-Site-Data", "value": "\"cache\", \"storage\", \"executionContexts\"" }
+      ]
+    },
+    {
+      "source": "/update.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" },
+        { "key": "Clear-Site-Data", "value": "\"cache\", \"storage\", \"executionContexts\"" }
+      ]
+    },
+    {
+      "source": "/(index\\.html|main\\.dart\\.js|flutter_bootstrap\\.js|version\\.json|manifest\\.json)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Pragma", "value": "no-cache" },
