@@ -1,4 +1,5 @@
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:remind_ai/firebase_options.dart';
@@ -48,12 +49,32 @@ Future<bool> initFirebase() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    if (kIsWeb) {
+      await _completeWebRedirectSignIn();
+    }
     await _activateAppCheck();
     return true;
   } catch (error, stackTrace) {
     debugPrint('Firebase: initialization failed ($error).');
     if (kDebugMode) debugPrintStack(stackTrace: stackTrace);
     return false;
+  }
+}
+
+/// After a Google redirect sign-in, the app reloads on the same URL. This
+/// completes the pending credential exchange (must run once per page load).
+Future<void> _completeWebRedirectSignIn() async {
+  try {
+    final result = await FirebaseAuth.instance.getRedirectResult();
+    if (result.user != null) {
+      debugPrint('Firebase: redirect sign-in completed.');
+    }
+  } on FirebaseAuthException catch (error) {
+    debugPrint(
+      'Firebase: redirect sign-in failed (${error.code}) — ${error.message}',
+    );
+  } catch (error) {
+    debugPrint('Firebase: redirect sign-in failed ($error).');
   }
 }
 
