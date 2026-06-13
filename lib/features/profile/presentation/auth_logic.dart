@@ -1,12 +1,24 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:remind_ai/constants/app_strings.dart';
 import 'package:remind_ai/core/services/firebase_service.dart';
 import 'package:remind_ai/core/services/purchases_service.dart';
 import 'package:remind_ai/features/profile/data/auth_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_logic.g.dart';
+
+/// User-facing sign-in failure copy with Firebase code when available.
+String signInErrorMessage(Object error) {
+  if (error is FirebaseAuthException) {
+    debugPrint('Sign-in failed: ${error.code} — ${error.message}');
+    return '${AppStrings.signInFailed} (${error.code})';
+  }
+  debugPrint('Sign-in failed: $error');
+  return AppStrings.signInFailed;
+}
 
 /// Holds the current Firebase [User] and reacts to auth changes by syncing the
 /// RevenueCat identity / entitlement. Stays inert (always signed-out) when
@@ -65,7 +77,7 @@ class AuthLogic extends _$AuthLogic {
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
       await repo.signInWithGoogle();
-      return repo.currentUser;
+      return _visible(repo.currentUser);
     });
     // User closed the popup without signing in — treat as a silent cancellation
     // rather than an error so no error UI is shown.

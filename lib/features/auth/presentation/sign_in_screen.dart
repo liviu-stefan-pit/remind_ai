@@ -26,7 +26,7 @@ class SignInScreen extends ConsumerWidget {
         final messenger = ScaffoldMessenger.of(context);
         messenger.clearSnackBars();
         messenger.showSnackBar(
-          SnackBar(content: Text(AppStrings.signInFailed)),
+          SnackBar(content: Text(signInErrorMessage(next.error!))),
         );
       }
     });

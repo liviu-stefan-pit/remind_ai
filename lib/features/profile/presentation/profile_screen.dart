@@ -118,8 +118,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _signIn() async {
     await ref.read(authLogicProvider.notifier).signInWithGoogle();
     final err = ref.read(authLogicProvider);
-    if (err is AsyncError && mounted) {
-      _snack(AppStrings.signInFailed);
+    if (err case AsyncError(:final error) when mounted) {
+      _snack(signInErrorMessage(error));
     }
   }
 

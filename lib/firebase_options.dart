@@ -44,7 +44,7 @@ class DefaultFirebaseOptions {
     appId: '1:1088490498640:web:a0c11ea65414fc85a83f55',
     messagingSenderId: '1088490498640',
     projectId: 'remind-ai-2555f',
-    authDomain: 'remind-ai-2555f.firebaseapp.com',
+    authDomain: 'remind-ai-six.vercel.app',
     storageBucket: 'remind-ai-2555f.firebasestorage.app',
     measurementId: 'G-R23314FT63',
   );
@@ -62,7 +62,7 @@ class DefaultFirebaseOptions {
     appId: '1:1088490498640:web:42e788ef936aa399a83f55',
     messagingSenderId: '1088490498640',
     projectId: 'remind-ai-2555f',
-    authDomain: 'remind-ai-2555f.firebaseapp.com',
+    authDomain: 'remind-ai-six.vercel.app',
     storageBucket: 'remind-ai-2555f.firebasestorage.app',
     measurementId: 'G-EMQ2HCVGVQ',
   );
