@@ -1,5 +1,5 @@
 {
-  "buildCommand": "if [ ! -d \"$HOME/flutter\" ]; then git clone https://github.com/flutter/flutter.git --depth 1 -b stable \"$HOME/flutter\"; fi && export PATH=\"$PATH:$HOME/flutter/bin\" && flutter pub get && flutter build web --release --pwa-strategy=none && cp web/sw_migration.js build/web/flutter_service_worker.js",
+  "buildCommand": "bash scripts/vercel-build.sh",
   "outputDirectory": "build/web",
   "installCommand": "echo 'Flutter install handled in buildCommand'",
   "framework": null,
