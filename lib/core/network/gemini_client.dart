@@ -8,8 +8,9 @@ part 'gemini_client.g.dart';
 /// Fast, low-cost model used for the free Standard style.
 const String kStandardModel = 'gemini-2.5-flash-lite';
 
-/// Higher-quality model powering the Pro interpretation styles.
-const String kProModel = 'gemini-3.5-flash';
+/// Cost-efficient Gemini 3 model for Pro interpretation styles
+/// (Psychological, Mythic, Creative).
+const String kProModel = 'gemini-3.1-flash-lite';
 
 /// Appended to every system instruction so user dream text (wrapped in
 /// <dream>…</dream> below) is always treated as data to interpret, never as

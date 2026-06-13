@@ -7,8 +7,8 @@ extension DreamStyleX on DreamStyle {
   bool get isPro => this != DreamStyle.standard;
 
   /// Gemini model that backs this style. Standard uses the fast, low-cost
-  /// model; Pro styles use the higher-quality model. Model names are defined
-  /// once in `gemini_client.dart`.
+  /// model; Pro styles use the dedicated Pro model (`kProModel` in
+  /// `gemini_client.dart`).
   String get model => isPro ? kProModel : kStandardModel;
 
   /// Output budget tuned to the prompt's target length. Pro styles produce
