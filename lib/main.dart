@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:remind_ai/app.dart';
 import 'package:remind_ai/core/services/firebase_service.dart';
 import 'package:remind_ai/hive/hive.dart';
+import 'package:remind_ai/utils/url_strategy_stub.dart'
+    if (dart.library.js_interop) 'package:remind_ai/utils/url_strategy_web.dart';
 
 Future<void> main() async {
   await bootstrap();
@@ -12,6 +14,7 @@ Future<void> main() async {
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
+  configureAppUrlStrategy();
 
   if (kReleaseMode) {
     debugPrint = (String? message, {int? wrapWidth}) {};

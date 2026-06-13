@@ -18,7 +18,7 @@ const _kDesktopClientSecret = String.fromEnvironment(
 AuthRepository authRepository(Ref ref) => AuthRepository();
 
 /// Wraps FirebaseAuth with a per-platform Google Sign-In strategy:
-///   - Web: `signInWithRedirect` (popup breaks on Vercel due to iframe headers)
+///   - Web: `signInWithPopup` (authDomain stays on *.firebaseapp.com)
 ///   - Android: native `google_sign_in` -> Firebase credential
 ///   - Windows: browser loopback OAuth -> Firebase credential
 class AuthRepository {
@@ -32,7 +32,7 @@ class AuthRepository {
 
   Future<void> signInWithGoogle() async {
     if (kIsWeb) {
-      await _auth.signInWithRedirect(GoogleAuthProvider());
+      await _auth.signInWithPopup(GoogleAuthProvider());
       return;
     }
 
